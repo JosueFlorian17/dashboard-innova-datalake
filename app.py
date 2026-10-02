@@ -13,7 +13,6 @@ except ImportError:
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = Path(os.getenv("DASHBOARD_DB", BASE_DIR / "dashboard_data_completo.db"))
 
-# --- CORRECCIÓN DE LA RUTA ---
 # Ahora busca dinámicamente la carpeta "shapefiles" en el mismo directorio de app.py
 SHAPEFILE_DIR = Path(os.getenv("SHAPEFILE_DIR", BASE_DIR / "shapefiles"))
 
@@ -106,7 +105,6 @@ CATALOG = {
     },
 }
 
-
 def get_db():
     if not DB_PATH.exists():
         raise FileNotFoundError(f"No existe la base de datos: {DB_PATH}")
@@ -114,13 +112,11 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
-
 def parse_year(value, default):
     try:
         return int(value)
     except (TypeError, ValueError):
         return default
-
 
 def with_names(df, conn):
     if df.empty or "ubigeo" not in df.columns:
@@ -130,7 +126,6 @@ def with_names(df, conn):
         conn,
     )
     return df.merge(names, on="ubigeo", how="left")
-
 
 def temporal_response(df, prefix, conn):
     if df.empty:
@@ -146,16 +141,13 @@ def temporal_response(df, prefix, conn):
     df = df.fillna("")
     return jsonify({"columns": list(df.columns), "rows": df.to_dict(orient="records")})
 
-
 @app.route("/")
 def home():
     return send_file(BASE_DIR / "index.html")
 
-
 @app.route("/api/config")
 def get_config():
     return jsonify(CATALOG)
-
 
 @app.route("/api/meta")
 def get_meta():
@@ -167,7 +159,6 @@ def get_meta():
     years = sorted(set(year for year in years if year is not None))
     return jsonify({"min_anio": min(years) if years else 2000, "max_anio": max(years) if years else 2024, "anios": years})
 
-
 @app.route("/api/data")
 def get_data():
     nivel = request.args.get("nivel", "departamento").lower()
@@ -177,8 +168,14 @@ def get_data():
     anio_max = parse_year(request.args.get("anio_max"), 2024)
     if anio_min > anio_max:
         anio_min, anio_max = anio_max, anio_min
-    if nivel not in {"departamento", "provincia", "distrito"} or base not in CATALOG:
+    if base not in CATALOG:
         return jsonify({"error": "Nivel o base no válidos"}), 400
+    base_config = CATALOG[base]
+    valid_indicators = {item["id"] for item in base_config["indicadores"]}
+    if nivel not in base_config["niveles"]:
+        return jsonify({"error": "Nivel no disponible para esta base"}), 400
+    if indicador not in valid_indicators:
+        return jsonify({"error": "Indicador no válido para esta base"}), 400
 
     conn = get_db()
     if base == "mortalidad":
@@ -244,8 +241,8 @@ def get_data():
     conn.close()
     return result
 
-
-@app.route("/api/geojson/")
+# --- AQUÍ ESTABA EL ERROR: AGREGADO EL
+@app.route("/api/geojson/<nivel>")
 def get_geojson(nivel):
     nivel = nivel.lower()
     if nivel in GEOJSON_CACHE:
@@ -282,7 +279,5 @@ def get_geojson(nivel):
     except Exception:
         return jsonify({"type": "FeatureCollection", "features": []})
 
-
 if __name__ == "__main__":
-    # host='0.0.0.0' expone el servidor correctamente en despliegues como Render
     app.run(host="0.0.0.0", port=5000, debug=False)
