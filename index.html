@@ -1,0 +1,459 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>InnovaLab - DataHub</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    body { font-family: 'Montserrat', sans-serif; margin: 0; background-color: #f8fafc; }
+    .navbar-inverse { background-color: #073B3A; color: #ffffff; }
+    .nav-tab.active { background-color: rgba(255, 255, 255, 0.18); border-bottom: 3px solid #20c997; }
+    .sidebar { background-color: #ffffff; border-right: 1px solid #e2e8f0; min-width: 330px; max-width: 330px; }
+    .map-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr) 300px; gap: 12px; height: 100%; min-height: 0; }
+    .map-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; min-height: 0; overflow: hidden; }
+    .map-panel-title { padding: 12px 14px 8px; color: #073B3A; font-size: 12px; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
+    .map-filter { padding: 10px 12px; border-bottom: 1px solid #edf2f7; }
+    .map-filter label { display: block; margin-bottom: 5px; color: #64748b; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .map-filter select { width: 100%; border: 1px solid #cbd5e1; border-radius: 3px; padding: 6px 8px; color: #334155; font-size: 11px; background: #fff; }
+    .map-indicators { max-height: 310px; overflow-y: auto; padding: 5px 8px 10px; }
+    .map-indicator { display: block; width: 100%; border: 0; border-radius: 3px; padding: 7px 8px; color: #475569; background: transparent; text-align: left; font-size: 11px; cursor: pointer; }
+    .map-indicator:hover, .map-indicator.active { background: #e6f7f1; color: #073B3A; font-weight: 700; }
+    #map { height: 100%; width: 100%; min-height: 420px; }
+    .map-canvas { position: relative; height: 100%; min-height: 420px; }
+    .map-status { position: absolute; top: 10px; left: 10px; z-index: 500; padding: 6px 9px; border-radius: 3px; color: #334155; background: rgba(255,255,255,.92); box-shadow: 0 1px 4px rgba(15,23,42,.15); font-size: 11px; }
+    .ranking-options { display: flex; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-size: 11px; }
+    .ranking-options label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+    .ranking-table-wrap { height: calc(100% - 91px); overflow: auto; }
+    .ranking-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    .ranking-table th { position: sticky; top: 0; padding: 8px; color: #64748b; background: #f8fafc; text-align: left; }
+    .ranking-table td { padding: 7px 8px; border-top: 1px solid #f1f5f9; color: #475569; }
+    .ranking-table td:last-child, .ranking-table th:last-child { text-align: right; }
+    @media (max-width: 1050px) { .map-layout { grid-template-columns: 190px minmax(0, 1fr); } .ranking-panel { grid-column: 1 / -1; height: 220px; } .ranking-table-wrap { height: 165px; } }
+    @media (max-width: 720px) { .map-layout { display: flex; flex-direction: column; overflow-y: auto; } .map-panel, .ranking-panel { flex: 0 0 auto; } .map-canvas { height: 55vh; } .map-panel:first-child { min-height: 260px; } }
+    .table-container { height: calc(100vh - 120px); overflow: auto; }
+    .legend { background: white; padding: 10px; border-radius: 6px; box-shadow: 0 0 15px rgba(0,0,0,0.2); font-size: 11px; line-height: 18px; }
+    .legend i { width: 16px; height: 16px; float: left; margin-right: 8px; opacity: 0.8; }
+  </style>
+</head>
+<body class="flex flex-col h-screen">
+
+  <header class="navbar-inverse h-14 flex items-center justify-between px-6 shadow-md z-20">
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-white text-sm">IL</div>
+      <span class="font-bold text-lg tracking-wide">InnovaLab - DataHub</span>
+    </div>
+    <nav class="flex h-full space-x-1">
+      <button id="tab-data-btn" onclick="cambiarPestana('data')" class="nav-tab active px-5 h-full flex items-center text-sm font-semibold transition">Data</button>
+      <button id="tab-mapa-btn" onclick="cambiarPestana('mapa')" class="nav-tab px-5 h-full flex items-center text-sm font-semibold transition">Mapa</button>
+    </nav>
+  </header>
+
+  <div class="flex flex-1 overflow-hidden">
+    <aside class="sidebar p-5 flex flex-col justify-between overflow-y-auto">
+      <div class="space-y-4">
+        <h4 class="font-bold text-gray-800 text-xs border-b pb-2 uppercase tracking-wider">Filtros de consulta</h4>
+
+        <!-- NIVEL GEOGRAFICO -->
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Nivel Geografico:</label>
+          <select id="nivel-select" onchange="onNivelChanged()" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs focus:ring-1 focus:ring-emerald-700">
+            <option value="departamento">Departamento</option>
+            <option value="provincia">Provincia</option>
+            <option value="distrito">Distrito</option>
+          </select>
+        </div>
+
+        <!-- 1. SELECCION DE BASE DE DATOS -->
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">1. Seleccionar Base:</label>
+          <select id="base-select" onchange="onBaseChanged()" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs font-semibold text-emerald-900 bg-emerald-50 focus:ring-1 focus:ring-emerald-700">
+          </select>
+        </div>
+
+        <!-- 2. SELECCION DE INDICADOR -->
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">2. Indicador:</label>
+          <select id="indicador-select" onchange="cargarDatos()" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs focus:ring-1 focus:ring-emerald-700">
+          </select>
+        </div>
+
+        <!-- RANGO DE ANOS CONDICIONAL -->
+        <div id="contenedor-anios" class="transition-all">
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Rango de Anos:</label>
+          <div class="flex items-center space-x-2">
+            <input type="number" id="anio-min" onchange="cargarDatos()" class="w-1/2 border border-gray-300 rounded px-2 py-1 text-xs">
+            <span class="text-xs text-gray-500">hasta</span>
+            <input type="number" id="anio-max" onchange="cargarDatos()" class="w-1/2 border border-gray-300 rounded px-2 py-1 text-xs">
+          </div>
+        </div>
+
+        <!-- SELECTOR DE COLUMNA PARA MAPA -->
+        <div id="contenedor-col-mapa" class="hidden border-t pt-3 border-gray-200">
+          <label class="block text-xs font-bold text-emerald-800 uppercase mb-1">Capa Mapeada:</label>
+          <select id="col-mapa-select" onchange="actualizarCapaMapa()" class="w-full border border-emerald-300 rounded px-2 py-1 text-xs bg-emerald-50">
+          </select>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-gray-200 space-y-2">
+        <button onclick="descargarCSV()" class="w-full bg-[#073B3A] hover:bg-[#0c5c5b] text-white py-2 px-4 rounded text-xs font-semibold transition flex items-center justify-center space-x-2 shadow">
+          <span>Descargar CSV Completo</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="flex-1 bg-white p-4 overflow-hidden relative">
+      <div id="vista-data" class="h-full flex flex-col">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="font-bold text-gray-800 text-xs">Explorador de Tablas (SQLite Completo)</h3>
+          <span id="contador-filas" class="text-xs text-gray-500 font-medium"></span>
+        </div>
+        <div class="table-container border border-gray-200 rounded shadow-sm">
+          <table class="min-w-full divide-y divide-gray-200 text-xs">
+            <thead class="bg-gray-100 sticky top-0" id="tabla-head"></thead>
+            <tbody class="divide-y divide-gray-100" id="tabla-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="vista-mapa" class="h-full w-full hidden">
+        <div class="map-layout">
+          <section class="map-panel">
+            <div class="map-panel-title">Panel de filtros</div>
+            <div class="map-filter">
+              <label for="map-nivel-select">Nivel geográfico</label>
+              <select id="map-nivel-select" onchange="cambiarNivelDesdeMapa(this.value)">
+                <option value="departamento">Departamento</option>
+                <option value="provincia">Provincia</option>
+                <option value="distrito">Distrito</option>
+              </select>
+            </div>
+            <div class="map-filter">
+              <label>Indicadores disponibles</label>
+              <div id="map-indicator-list" class="map-indicators"></div>
+            </div>
+          </section>
+          <section class="map-panel map-canvas">
+            <div id="map-status" class="map-status">Cargando mapa...</div>
+            <div id="map"></div>
+          </section>
+          <section class="map-panel ranking-panel">
+            <div class="map-panel-title">Ranking (Top 10)</div>
+            <div class="ranking-options">
+              <label><input type="radio" name="ranking-mode" value="max" onchange="renderRanking()"> Max</label>
+              <label><input type="radio" name="ranking-mode" value="min" checked onchange="renderRanking()"> Min</label>
+            </div>
+            <div class="ranking-table-wrap">
+              <table class="ranking-table">
+                <thead><tr><th>Ubicación</th><th>Valor</th></tr></thead>
+                <tbody id="ranking-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let configBases = {};
+    let mapInstance = null;
+    let geoJsonLayer = null;
+    let geoJsonCache = {};
+    let datosActuales = { columns: [], rows: [] };
+    let rankingMode = 'min';
+
+    async function initApp() {
+      const res = await fetch('/api/config');
+      configBases = await res.json();
+      onNivelChanged();
+    }
+
+    function onNivelChanged() {
+      const nivel = document.getElementById('nivel-select').value;
+      document.getElementById('map-nivel-select').value = nivel;
+      const baseSelect = document.getElementById('base-select');
+      baseSelect.innerHTML = '';
+
+      Object.keys(configBases).forEach(k => {
+        const item = configBases[k];
+        if (item.niveles.includes(nivel)) {
+          const opt = document.createElement('option');
+          opt.value = k;
+          opt.textContent = item.label;
+          baseSelect.appendChild(opt);
+        }
+      });
+      onBaseChanged();
+    }
+
+    function cambiarNivelDesdeMapa(nivel) {
+      document.getElementById('nivel-select').value = nivel;
+      onNivelChanged();
+    }
+
+    function onBaseChanged() {
+      const baseKey = document.getElementById('base-select').value;
+      const item = configBases[baseKey];
+      const indSelect = document.getElementById('indicador-select');
+      indSelect.innerHTML = '';
+
+      item.indicadores.forEach(ind => {
+        const opt = document.createElement('option');
+        opt.value = ind.id;
+        opt.textContent = ind.label;
+        indSelect.appendChild(opt);
+      });
+      renderMapIndicatorList(item.indicadores);
+
+      const contAnios = document.getElementById('contenedor-anios');
+      if (item.tiene_anios) {
+        contAnios.classList.remove('hidden');
+        document.getElementById('anio-min').value = item.min_anio;
+        document.getElementById('anio-max').value = item.max_anio;
+      } else {
+        contAnios.classList.add('hidden');
+      }
+
+      cargarDatos();
+    }
+
+    async function cargarDatos() {
+      const nivel = document.getElementById('nivel-select').value;
+      const base = document.getElementById('base-select').value;
+      const indicador = document.getElementById('indicador-select').value;
+      const anioMin = document.getElementById('anio-min').value || 2000;
+      const anioMax = document.getElementById('anio-max').value || 2024;
+
+      try {
+        const res = await fetch(`/api/data?nivel=${nivel}&base=${base}&indicador=${indicador}&anio_min=${anioMin}&anio_max=${anioMax}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'No se pudieron cargar los datos');
+        datosActuales = data;
+        renderTabla(data);
+        actualizarSelectColumnasMapa(data.columns);
+        renderRanking();
+
+        if (!document.getElementById('vista-mapa').classList.contains('hidden')) {
+          actualizarCapaMapa();
+        }
+      } catch (err) {
+        document.getElementById('map-status').textContent = 'No se pudieron cargar los datos';
+        console.error("Error cargando datos:", err);
+      }
+    }
+
+    function renderMapIndicatorList(indicadores) {
+      const list = document.getElementById('map-indicator-list');
+      list.innerHTML = '';
+      indicadores.forEach(ind => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'map-indicator';
+        button.dataset.indicator = ind.id;
+        button.textContent = ind.label;
+        button.onclick = () => {
+          document.getElementById('indicador-select').value = ind.id;
+          cargarDatos();
+          document.querySelectorAll('.map-indicator').forEach(item => item.classList.remove('active'));
+          button.classList.add('active');
+        };
+        list.appendChild(button);
+      });
+      const current = document.getElementById('indicador-select').value;
+      const active = list.querySelector(`[data-indicator="${current}"]`);
+      if (active) active.classList.add('active');
+    }
+
+    function renderTabla(data) {
+      const thead = document.getElementById('tabla-head');
+      const tbody = document.getElementById('tabla-body');
+      thead.innerHTML = '';
+      tbody.innerHTML = '';
+
+      document.getElementById('contador-filas').textContent = `${data.rows.length.toLocaleString()} registros`;
+
+      if (!data.columns || data.columns.length === 0) {
+        tbody.innerHTML = '<tr><td class="p-4 text-center text-gray-500">No hay datos disponibles.</td></tr>';
+        return;
+      }
+
+      const trHead = document.createElement('tr');
+      data.columns.forEach(col => {
+        const th = document.createElement('th');
+        th.className = "px-3 py-2 text-left font-bold text-gray-700 border-b";
+        th.textContent = col;
+        trHead.appendChild(th);
+      });
+      thead.appendChild(trHead);
+
+      data.rows.slice(0, 150).forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-emerald-50/50";
+        data.columns.forEach(col => {
+          const td = document.createElement('td');
+          td.className = "px-3 py-1.5 border-b text-gray-700 whitespace-nowrap";
+          td.textContent = (row[col] !== null && row[col] !== undefined) ? row[col] : '';
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    function actualizarSelectColumnasMapa(cols) {
+      const sel = document.getElementById('col-mapa-select');
+      sel.innerHTML = '';
+      const validCols = cols.filter(c => c.toLowerCase() !== 'ubigeo' && c.toLowerCase() !== 'nombre');
+      validCols.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        sel.appendChild(opt);
+      });
+    }
+
+    function getColor(val, min, max) {
+      if (val === null || val === undefined || isNaN(val)) return '#e2e8f0';
+      const t = (val - min) / ((max - min) || 1);
+            return t > 0.8 ? '#b2182b' :
+              t > 0.6 ? '#ef8a62' :
+              t > 0.4 ? '#fddbc7' :
+              t > 0.2 ? '#67a9cf' : '#2166ac';
+    }
+
+      function renderRanking() {
+        const body = document.getElementById('ranking-body');
+        body.innerHTML = '';
+        const col = document.getElementById('col-mapa-select')?.value;
+        if (!col || !datosActuales.rows) return;
+        const mode = document.querySelector('input[name="ranking-mode"]:checked')?.value || rankingMode;
+        rankingMode = mode;
+        const rows = datosActuales.rows
+          .map(row => ({ name: row.nombre || row.ubigeo || 'Sin nombre', value: Number(row[col]) }))
+          .filter(row => Number.isFinite(row.value))
+          .sort((a, b) => mode === 'max' ? b.value - a.value : a.value - b.value)
+          .slice(0, 10);
+        rows.forEach(row => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${row.name}</td><td>${row.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>`;
+          body.appendChild(tr);
+        });
+        if (!rows.length) body.innerHTML = '<tr><td colspan="2">No hay valores numéricos</td></tr>';
+      }
+
+    async function actualizarCapaMapa() {
+      if (!mapInstance) return;
+      const nivel = document.getElementById('nivel-select').value;
+      const col = document.getElementById('col-mapa-select')?.value;
+      const status = document.getElementById('map-status');
+      if (!col) {
+        status.textContent = 'Sin indicador numérico';
+        renderRanking();
+        return;
+      }
+      status.textContent = `Mapa: ${col}`;
+
+      const mapaVal = {};
+      let vals = [];
+      datosActuales.rows.forEach(r => {
+        const u = String(r.ubigeo).trim();
+        const v = parseFloat(r[col]);
+        if (!isNaN(v)) {
+          mapaVal[u] = { val: v, nom: r.nombre || '' };
+          vals.push(v);
+        }
+      });
+
+      const minVal = vals.length ? Math.min(...vals) : 0;
+      const maxVal = vals.length ? Math.max(...vals) : 1;
+
+      let geoData = geoJsonCache[nivel];
+      if (!geoData) {
+        try {
+          const resp = await fetch(`/api/geojson/${nivel}`);
+          geoData = await resp.json();
+          geoJsonCache[nivel] = geoData;
+        } catch (e) {
+          console.error("Error geojson:", e);
+          return;
+        }
+      }
+
+      if (geoJsonLayer) mapInstance.removeLayer(geoJsonLayer);
+
+      geoJsonLayer = L.geoJSON(geoData, {
+        style: f => {
+          const u = String(f.properties.ubigeo || '').trim();
+          const info = mapaVal[u];
+          return {
+            fillColor: info ? getColor(info.val, minVal, maxVal) : '#f1f5f9',
+            weight: 0.8,
+            color: '#ffffff',
+            fillOpacity: 0.8
+          };
+        },
+        onEachFeature: (f, l) => {
+          const u = String(f.properties.ubigeo || '').trim();
+          const info = mapaVal[u];
+          const txtVal = info ? Number(info.val).toLocaleString() : 'Sin registro';
+          const nom = info ? info.nom : 'Zona';
+          l.bindTooltip(`<strong>${nom}</strong><br/>UBIGEO: ${u}<br/>${col}: ${txtVal}`, { sticky: true });
+        }
+      }).addTo(mapInstance);
+
+      if (geoJsonLayer.getBounds().isValid()) {
+        mapInstance.fitBounds(geoJsonLayer.getBounds());
+      }
+      renderRanking();
+    }
+
+    function initMap() {
+      if (!mapInstance) {
+        mapInstance = L.map('map').setView([-9.189967, -75.015152], 5);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 18,
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(mapInstance);
+      }
+      setTimeout(() => { mapInstance.invalidateSize(); }, 200);
+      actualizarCapaMapa();
+    }
+
+    function cambiarPestana(p) {
+      if (p === 'data') {
+        document.getElementById('vista-data').classList.remove('hidden');
+        document.getElementById('vista-mapa').classList.add('hidden');
+        document.getElementById('contenedor-col-mapa').classList.add('hidden');
+        document.getElementById('tab-data-btn').classList.add('active');
+        document.getElementById('tab-mapa-btn').classList.remove('active');
+      } else {
+        document.getElementById('vista-data').classList.add('hidden');
+        document.getElementById('vista-mapa').classList.remove('hidden');
+        document.getElementById('contenedor-col-mapa').classList.remove('hidden');
+        document.getElementById('tab-data-btn').classList.remove('active');
+        document.getElementById('tab-mapa-btn').classList.add('active');
+        initMap();
+        renderRanking();
+      }
+    }
+
+    function descargarCSV() {
+      if (!datosActuales.rows || datosActuales.rows.length === 0) return;
+      const header = datosActuales.columns.join(',');
+      const rows = datosActuales.rows.map(r => datosActuales.columns.map(c => `"${r[c] !== undefined ? r[c] : ''}"`).join(','));
+      const csvContent = "data:text/csv;charset=utf-8," + [header, ...rows].join('\n');
+      const link = document.createElement("a");
+      link.setAttribute("href", encodeURI(csvContent));
+      link.setAttribute("download", `datahub_export_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    document.addEventListener("DOMContentLoaded", initApp);
+  </script>
+</body>
+</html>

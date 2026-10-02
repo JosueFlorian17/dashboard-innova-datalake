@@ -1,0 +1,5 @@
+Flask
+pandas
+geopandas
+gunicorn
+flask-httpauth
