@@ -13,8 +13,8 @@ except ImportError:
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = Path(os.getenv("DASHBOARD_DB", BASE_DIR / "dashboard_data_completo.db"))
 
-# --- CAMBIO CLAVE ---
-# Ahora busca dinámicamente la carpeta "shapefiles" que está junto a app.py
+# --- CORRECCIÓN DE LA RUTA ---
+# Ahora busca dinámicamente la carpeta "shapefiles" en el mismo directorio de app.py
 SHAPEFILE_DIR = Path(os.getenv("SHAPEFILE_DIR", BASE_DIR / "shapefiles"))
 
 app = Flask(__name__, static_folder=str(BASE_DIR))
@@ -106,6 +106,7 @@ CATALOG = {
     },
 }
 
+
 def get_db():
     if not DB_PATH.exists():
         raise FileNotFoundError(f"No existe la base de datos: {DB_PATH}")
@@ -113,11 +114,13 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+
 def parse_year(value, default):
     try:
         return int(value)
     except (TypeError, ValueError):
         return default
+
 
 def with_names(df, conn):
     if df.empty or "ubigeo" not in df.columns:
@@ -127,6 +130,7 @@ def with_names(df, conn):
         conn,
     )
     return df.merge(names, on="ubigeo", how="left")
+
 
 def temporal_response(df, prefix, conn):
     if df.empty:
@@ -142,13 +146,16 @@ def temporal_response(df, prefix, conn):
     df = df.fillna("")
     return jsonify({"columns": list(df.columns), "rows": df.to_dict(orient="records")})
 
+
 @app.route("/")
 def home():
     return send_file(BASE_DIR / "index.html")
 
+
 @app.route("/api/config")
 def get_config():
     return jsonify(CATALOG)
+
 
 @app.route("/api/meta")
 def get_meta():
@@ -159,6 +166,7 @@ def get_meta():
     conn.close()
     years = sorted(set(year for year in years if year is not None))
     return jsonify({"min_anio": min(years) if years else 2000, "max_anio": max(years) if years else 2024, "anios": years})
+
 
 @app.route("/api/data")
 def get_data():
@@ -236,6 +244,7 @@ def get_data():
     conn.close()
     return result
 
+
 @app.route("/api/geojson/")
 def get_geojson(nivel):
     nivel = nivel.lower()
@@ -273,5 +282,7 @@ def get_geojson(nivel):
     except Exception:
         return jsonify({"type": "FeatureCollection", "features": []})
 
+
 if __name__ == "__main__":
+    # host='0.0.0.0' expone el servidor correctamente en despliegues como Render
     app.run(host="0.0.0.0", port=5000, debug=False)
