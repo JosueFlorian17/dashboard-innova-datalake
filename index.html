@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -12,30 +12,175 @@
     .navbar-inverse { background-color: #073B3A; color: #ffffff; }
     .nav-tab.active { background-color: rgba(255, 255, 255, 0.18); border-bottom: 3px solid #20c997; }
     .sidebar { background-color: #ffffff; border-right: 1px solid #e2e8f0; min-width: 330px; max-width: 330px; }
-    .map-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr) 300px; gap: 12px; height: 100%; min-height: 0; }
+    .map-layout { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 12px; height: 100%; min-height: 0; }
     .map-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; min-height: 0; overflow: hidden; }
     .map-panel-title { padding: 12px 14px 8px; color: #073B3A; font-size: 12px; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
-    .map-filter { padding: 10px 12px; border-bottom: 1px solid #edf2f7; }
-    .map-filter label { display: block; margin-bottom: 5px; color: #64748b; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-    .map-filter select { width: 100%; border: 1px solid #cbd5e1; border-radius: 3px; padding: 6px 8px; color: #334155; font-size: 11px; background: #fff; }
-    .map-indicators { max-height: 310px; overflow-y: auto; padding: 5px 8px 10px; }
-    .map-indicator { display: block; width: 100%; border: 0; border-radius: 3px; padding: 7px 8px; color: #475569; background: transparent; text-align: left; font-size: 11px; cursor: pointer; }
-    .map-indicator:hover, .map-indicator.active { background: #e6f7f1; color: #073B3A; font-weight: 700; }
     #map { height: 100%; width: 100%; min-height: 420px; }
     .map-canvas { position: relative; height: 100%; min-height: 420px; }
-    .map-status { position: absolute; top: 10px; left: 10px; z-index: 500; padding: 6px 9px; border-radius: 3px; color: #334155; background: rgba(255,255,255,.92); box-shadow: 0 1px 4px rgba(15,23,42,.15); font-size: 11px; }
+    .map-status { position: absolute; top: 10px; left: 55px; z-index: 500; padding: 6px 9px; border-radius: 3px; color: #334155; background: rgba(255,255,255,.92); box-shadow: 0 1px 4px rgba(15,23,42,.15); font-size: 11px; }
     .ranking-options { display: flex; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-size: 11px; }
     .ranking-options label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
     .ranking-table-wrap { height: calc(100% - 91px); overflow: auto; }
     .ranking-table { width: 100%; border-collapse: collapse; font-size: 10px; }
     .ranking-table th { position: sticky; top: 0; padding: 8px; color: #64748b; background: #f8fafc; text-align: left; }
     .ranking-table td { padding: 7px 8px; border-top: 1px solid #f1f5f9; color: #475569; }
+    .ranking-table tr { cursor: pointer; transition: background-color 0.15s; }
+    .ranking-table tr:hover { background-color: #e6f7f1; }
     .ranking-table td:last-child, .ranking-table th:last-child { text-align: right; }
-    @media (max-width: 1050px) { .map-layout { grid-template-columns: 190px minmax(0, 1fr); } .ranking-panel { grid-column: 1 / -1; height: 220px; } .ranking-table-wrap { height: 165px; } }
-    @media (max-width: 720px) { .map-layout { display: flex; flex-direction: column; overflow-y: auto; } .map-panel, .ranking-panel { flex: 0 0 auto; } .map-canvas { height: 55vh; } .map-panel:first-child { min-height: 260px; } }
+    @media (max-width: 900px) { .map-layout { grid-template-columns: minmax(0, 1fr); } .ranking-panel { height: 250px; } .ranking-table-wrap { height: 165px; } }
+    @media (max-width: 720px) { .map-layout { display: flex; flex-direction: column; overflow-y: auto; } .map-panel, .ranking-panel { flex: 0 0 auto; } .map-canvas { height: 55vh; } }
     .table-container { height: calc(100vh - 120px); overflow: auto; }
-    .legend { background: white; padding: 10px; border-radius: 6px; box-shadow: 0 0 15px rgba(0,0,0,0.2); font-size: 11px; line-height: 18px; }
-    .legend i { width: 16px; height: 16px; float: left; margin-right: 8px; opacity: 0.8; }
+    
+    /* DUAL RANGE SLIDER WITH HEADER COLOR */
+    .dual-slider-container {
+      position: relative;
+      width: 100%;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      touch-action: none;
+    }
+    .dual-slider-track {
+      position: absolute;
+      width: 100%;
+      height: 5px;
+      background-color: #e2e8f0;
+      border-radius: 3px;
+    }
+    .dual-slider-highlight {
+      position: absolute;
+      height: 5px;
+      background-color: #073B3A;
+      border-radius: 3px;
+      z-index: 1;
+    }
+    .dual-slider-input {
+      position: absolute;
+      width: 100%;
+      height: 5px;
+      background: none;
+      pointer-events: none;
+      appearance: none;
+      -webkit-appearance: none;
+      margin: 0;
+      z-index: 3;
+    }
+    .dual-slider-input::-webkit-slider-thumb {
+      pointer-events: auto;
+      appearance: none;
+      -webkit-appearance: none;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2px solid #073B3A;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .dual-slider-input::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
+    .dual-slider-input::-moz-range-thumb {
+      pointer-events: auto;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2px solid #073B3A;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+      cursor: pointer;
+    }
+
+    /* LEYENDA VERTICAL UNIVARIADA */
+    .vertical-legend {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 8px 10px;
+      border-radius: 4px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.2);
+      font-size: 10px;
+      font-weight: 600;
+      color: #334155;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .vertical-bar {
+      width: 12px;
+      height: 130px;
+      border-radius: 2px;
+      background: linear-gradient(to bottom, #2166ac 0%, #67a9cf 25%, #fee08b 50%, #f46d43 75%, #b2182b 100%);
+      box-shadow: inset 0 0 1px rgba(0,0,0,0.3);
+    }
+    .vertical-values {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 130px;
+      line-height: 1;
+    }
+
+    /* LEYENDA CUADRADA BIVARIADA */
+    .bivariate-square-legend {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 8px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: inline-block;
+      max-width: 160px;
+    }
+    .biv-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 26px);
+      grid-template-rows: repeat(3, 26px);
+      gap: 2px;
+      background: #e2e8f0;
+      padding: 2px;
+      border-radius: 2px;
+      width: 86px;
+      height: 86px;
+    }
+    .biv-cell {
+      width: 26px;
+      height: 26px;
+      cursor: pointer;
+      transition: transform 0.1s, outline 0.1s;
+    }
+    .biv-cell:hover, .biv-cell.active {
+      outline: 2px solid #073B3A;
+      transform: scale(1.15);
+      z-index: 10;
+    }
+    .biv-axis-y {
+      font-size: 8.5px;
+      font-weight: 700;
+      color: #33649f;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      text-align: center;
+      margin-right: 4px;
+      max-height: 86px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: block;
+    }
+    .biv-axis-x {
+      font-size: 8.5px;
+      font-weight: 700;
+      color: #8a2336;
+      text-align: center;
+      margin-top: 4px;
+      max-width: 86px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: block;
+    }
   </style>
 </head>
 <body class="flex flex-col h-screen">
@@ -56,6 +201,15 @@
       <div class="space-y-4">
         <h4 class="font-bold text-gray-800 text-xs border-b pb-2 uppercase tracking-wider">Filtros de consulta</h4>
 
+        <!-- TIPO DE MAPA (UNIVARIADO / BIVARIADO - SOLO VISIBLE EN TAB MAPA) -->
+        <div id="contenedor-modo-mapa" class="hidden">
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Modo Mapa:</label>
+          <select id="map-mode-select" onchange="onMapModeChanged(this.value)" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs font-semibold focus:ring-1 focus:ring-emerald-700">
+            <option value="univariado">Univariado</option>
+            <option value="bivariado">Bivariado</option>
+          </select>
+        </div>
+
         <!-- NIVEL GEOGRAFICO -->
         <div>
           <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Nivel Geografico:</label>
@@ -66,35 +220,95 @@
           </select>
         </div>
 
-        <!-- 1. SELECCION DE BASE DE DATOS -->
-        <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">1. Seleccionar Base:</label>
-          <select id="base-select" onchange="onBaseChanged()" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs font-semibold text-emerald-900 bg-emerald-50 focus:ring-1 focus:ring-emerald-700">
-          </select>
-        </div>
+        <!-- FILTROS NORMALES (UNIVARIADO O DATA TAB) -->
+        <div id="seccion-filtros-univariado" class="space-y-3">
+          <!-- 1. SELECCION DE BASE DE DATOS -->
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">1. Seleccionar Base:</label>
+            <select id="base-select" onchange="onBaseChanged()" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs font-semibold text-emerald-900 bg-emerald-50 focus:ring-1 focus:ring-emerald-700">
+            </select>
+          </div>
 
-        <!-- 2. SELECCION DE INDICADOR -->
-        <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">2. Indicador:</label>
-          <select id="indicador-select" onchange="cargarDatos()" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs focus:ring-1 focus:ring-emerald-700">
-          </select>
-        </div>
+          <!-- 2. SELECCION DE INDICADOR -->
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">2. Indicador:</label>
+            <select id="indicador-select" onchange="cargarDatos()" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs focus:ring-1 focus:ring-emerald-700">
+            </select>
+          </div>
 
-        <!-- RANGO DE ANOS CONDICIONAL -->
-        <div id="contenedor-anios" class="transition-all">
-          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Rango de Anos:</label>
-          <div class="flex items-center space-x-2">
-            <input type="number" id="anio-min" onchange="cargarDatos()" class="w-1/2 border border-gray-300 rounded px-2 py-1 text-xs">
-            <span class="text-xs text-gray-500">hasta</span>
-            <input type="number" id="anio-max" onchange="cargarDatos()" class="w-1/2 border border-gray-300 rounded px-2 py-1 text-xs">
+          <!-- BOTON PARA INVERTIR ESCALA DE COLOR (SOLO VISIBLE EN TAB MAPA) -->
+          <div id="contenedor-invert-palette" class="hidden">
+            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Escala de Color:</label>
+            <button type="button" id="btn-invert-palette" onclick="toggleInvertPalette()" class="w-full border border-gray-300 hover:bg-gray-50 rounded px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition flex items-center justify-between">
+              <span>Invertir Colores</span>
+              <span id="label-invert-status" class="text-[9.5px] text-emerald-800 font-bold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Azul Alto / Rojo Bajo</span>
+            </button>
+          </div>
+
+          <!-- DUAL RANGE SLIDER UNIVARIADO -->
+          <div id="contenedor-anios" class="transition-all pt-1">
+            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Rango de Años:</label>
+            
+            <div class="dual-slider-container my-1" onpointerdown="onSliderContainerPointerDown(event, 'slider-uni')" onpointermove="onSliderContainerPointerMove(event, 'slider-uni')">
+              <div class="dual-slider-track"></div>
+              <div id="slider-uni-highlight" class="dual-slider-highlight"></div>
+              <input type="range" id="slider-uni-min" oninput="onDualSliderInput('slider-uni', 'min')" onchange="onDualSliderCommit('slider-uni')" class="dual-slider-input">
+              <input type="range" id="slider-uni-max" oninput="onDualSliderInput('slider-uni', 'max')" onchange="onDualSliderCommit('slider-uni')" class="dual-slider-input">
+            </div>
+
+            <div class="flex justify-between items-center text-xs font-bold text-[#073B3A] px-1">
+              <span id="slider-uni-min-val">2000</span>
+              <span class="text-xs text-gray-400 font-normal">hasta</span>
+              <span id="slider-uni-max-val">2024</span>
+            </div>
           </div>
         </div>
 
-        <!-- SELECTOR DE COLUMNA PARA MAPA -->
-        <div id="contenedor-col-mapa" class="hidden border-t pt-3 border-gray-200">
-          <label class="block text-xs font-bold text-emerald-800 uppercase mb-1">Capa Mapeada:</label>
-          <select id="col-mapa-select" onchange="actualizarCapaMapa()" class="w-full border border-emerald-300 rounded px-2 py-1 text-xs bg-emerald-50">
-          </select>
+        <!-- FILTROS BIVARIADOS (CON DUAL SLIDERS PARA CADA VARIABLE) -->
+        <div id="seccion-filtros-bivariado" class="space-y-3 hidden">
+          <!-- VARIABLE 1 (X) -->
+          <div class="p-2.5 border border-gray-200 rounded bg-gray-50/50 space-y-2">
+            <label class="block text-[10px] font-bold text-[#8a2336] uppercase">Variable 1 (Horizontal):</label>
+            <select id="biv-base-1" onchange="onBivBase1Changed()" class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-white"></select>
+            <select id="biv-ind-1" onchange="cargarDatosBivariados()" class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-white"></select>
+            
+            <!-- DUAL SLIDER VAR 1 -->
+            <div id="biv-slider-box-1" class="hidden pt-1">
+              <div class="dual-slider-container" onpointerdown="onSliderContainerPointerDown(event, 'slider-biv1')" onpointermove="onSliderContainerPointerMove(event, 'slider-biv1')">
+                <div class="dual-slider-track"></div>
+                <div id="slider-biv1-highlight" class="dual-slider-highlight"></div>
+                <input type="range" id="slider-biv1-min" oninput="onDualSliderInput('slider-biv1', 'min')" onchange="onDualSliderCommit('slider-biv1')" class="dual-slider-input">
+                <input type="range" id="slider-biv1-max" oninput="onDualSliderInput('slider-biv1', 'max')" onchange="onDualSliderCommit('slider-biv1')" class="dual-slider-input">
+              </div>
+              <div class="flex justify-between items-center text-[10px] font-bold text-[#073B3A] px-1">
+                <span id="slider-biv1-min-val">2000</span>
+                <span class="text-[9px] text-gray-400 font-normal">hasta</span>
+                <span id="slider-biv1-max-val">2024</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- VARIABLE 2 (Y) -->
+          <div class="p-2.5 border border-gray-200 rounded bg-gray-50/50 space-y-2">
+            <label class="block text-[10px] font-bold text-[#33649f] uppercase">Variable 2 (Vertical):</label>
+            <select id="biv-base-2" onchange="onBivBase2Changed()" class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-white"></select>
+            <select id="biv-ind-2" onchange="cargarDatosBivariados()" class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-white"></select>
+            
+            <!-- DUAL SLIDER VAR 2 -->
+            <div id="biv-slider-box-2" class="hidden pt-1">
+              <div class="dual-slider-container" onpointerdown="onSliderContainerPointerDown(event, 'slider-biv2')" onpointermove="onSliderContainerPointerMove(event, 'slider-biv2')">
+                <div class="dual-slider-track"></div>
+                <div id="slider-biv2-highlight" class="dual-slider-highlight"></div>
+                <input type="range" id="slider-biv2-min" oninput="onDualSliderInput('slider-biv2', 'min')" onchange="onDualSliderCommit('slider-biv2')" class="dual-slider-input">
+                <input type="range" id="slider-biv2-max" oninput="onDualSliderInput('slider-biv2', 'max')" onchange="onDualSliderCommit('slider-biv2')" class="dual-slider-input">
+              </div>
+              <div class="flex justify-between items-center text-[10px] font-bold text-[#073B3A] px-1">
+                <span id="slider-biv2-min-val">2000</span>
+                <span class="text-[9px] text-gray-400 font-normal">hasta</span>
+                <span id="slider-biv2-max-val">2024</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -121,34 +335,38 @@
 
       <div id="vista-mapa" class="h-full w-full hidden">
         <div class="map-layout">
-          <section class="map-panel">
-            <div class="map-panel-title">Panel de filtros</div>
-            <div class="map-filter">
-              <label for="map-nivel-select">Nivel geográfico</label>
-              <select id="map-nivel-select" onchange="cambiarNivelDesdeMapa(this.value)">
-                <option value="departamento">Departamento</option>
-                <option value="provincia">Provincia</option>
-                <option value="distrito">Distrito</option>
-              </select>
-            </div>
-            <div class="map-filter">
-              <label>Indicadores disponibles</label>
-              <div id="map-indicator-list" class="map-indicators"></div>
-            </div>
-          </section>
           <section class="map-panel map-canvas">
             <div id="map-status" class="map-status">Cargando mapa...</div>
             <div id="map"></div>
+
+            <!-- LEYENDA BIVARIADA CUADRADA COMPACTA -->
+            <div id="bivariate-legend" class="bivariate-square-legend hidden">
+              <div class="flex items-center">
+                <div class="biv-axis-y" id="biv-axis-label-y">Variable 2 →</div>
+                <div>
+                  <div id="biv-grid-container" class="biv-grid"></div>
+                  <div class="biv-axis-x" id="biv-axis-label-x">Variable 1 →</div>
+                </div>
+              </div>
+            </div>
           </section>
+
           <section class="map-panel ranking-panel">
             <div class="map-panel-title">Ranking (Top 10)</div>
             <div class="ranking-options">
               <label><input type="radio" name="ranking-mode" value="max" onchange="renderRanking()"> Max</label>
               <label><input type="radio" name="ranking-mode" value="min" checked onchange="renderRanking()"> Min</label>
             </div>
+            
+            <!-- SELECTOR DE VARIABLE BIVARIADA PARA RANKING -->
+            <div id="biv-ranking-var-toggle" class="hidden my-2 flex bg-gray-100 p-0.5 rounded border border-gray-200 text-[10px] font-semibold">
+              <button id="biv-rank-btn-1" type="button" onclick="setBivRankingVar(1)" class="flex-1 py-1 px-1 rounded bg-[#073B3A] text-white font-bold text-center truncate transition shadow-xs">Var 1</button>
+              <button id="biv-rank-btn-2" type="button" onclick="setBivRankingVar(2)" class="flex-1 py-1 px-1 rounded text-gray-700 hover:bg-gray-200 text-center truncate transition">Var 2</button>
+            </div>
+
             <div class="ranking-table-wrap">
               <table class="ranking-table">
-                <thead><tr><th>Ubicación</th><th>Valor</th></tr></thead>
+                <thead><tr><th>Ubicación</th><th id="ranking-metric-header">Valor</th></tr></thead>
                 <tbody id="ranking-body"></tbody>
               </table>
             </div>
@@ -163,18 +381,98 @@
     let mapInstance = null;
     let geoJsonLayer = null;
     let geoJsonCache = {};
+    let layersByUbigeo = {};
     let datosActuales = { columns: [], rows: [] };
     let rankingMode = 'min';
+    let currentMapMode = 'univariado';
+    let legendControl = null;
+    let sliderDebounceTimer = null;
+    let isInvertedPalette = false;
+    let currentUniMap = {};
+    let currentUniLabel = '';
+
+    // Dual Range Slider Limits
+    let sliderBounds = {
+      'slider-uni': { min: 2000, max: 2024 },
+      'slider-biv1': { min: 2000, max: 2024 },
+      'slider-biv2': { min: 2000, max: 2024 }
+    };
+
+    // Bivariate State
+    let datosBiv1 = { columns: [], rows: [] };
+    let datosBiv2 = { columns: [], rows: [] };
+    let currentBivMap1 = {};
+    let currentBivMap2 = {};
+    let currentBivLabel1 = 'Variable 1';
+    let currentBivLabel2 = 'Variable 2';
+    let bivRankingVar = 1;
+
+    // Bivariate 3x3 Palette (Sampled directly from user's reference image)
+    const BIV_MATRIX_3x3 = [
+      ['#c9c9c9', '#ab737e', '#8a2336'], // Y=0 (Low Var 2: Grey -> Mauve -> Crimson)
+      ['#7895b5', '#655770', '#541d32'], // Y=1 (Med Var 2: Soft Blue -> Purple -> Wine)
+      ['#33649f', '#2d3c65', '#24152c']  // Y=2 (High Var 2: Steel Blue -> Dark Navy -> Deep Plum)
+    ];
+
+    function cleanIndicatorName(name) {
+      if (!name) return '';
+      return name.replace(/\s*\(\d{4}[^\)]*\)/g, '').trim();
+    }
+
+    function setBivRankingVar(varNum) {
+      bivRankingVar = varNum;
+      updateBivRankingButtons();
+      renderRankingBivariado();
+    }
+
+    function updateBivRankingButtons() {
+      const btn1 = document.getElementById('biv-rank-btn-1');
+      const btn2 = document.getElementById('biv-rank-btn-2');
+      if (!btn1 || !btn2) return;
+      
+      const lbl1 = currentBivLabel1 || 'Var 1';
+      const lbl2 = currentBivLabel2 || 'Var 2';
+      
+      btn1.textContent = lbl1;
+      btn1.title = lbl1;
+      btn2.textContent = lbl2;
+      btn2.title = lbl2;
+
+      if (bivRankingVar === 1) {
+        btn1.className = 'flex-1 py-1 px-1.5 rounded bg-[#073B3A] text-white font-bold text-center truncate transition shadow-xs';
+        btn2.className = 'flex-1 py-1 px-1.5 rounded text-gray-700 hover:bg-gray-200 text-center truncate transition';
+      } else {
+        btn2.className = 'flex-1 py-1 px-1.5 rounded bg-[#073B3A] text-white font-bold text-center truncate transition shadow-xs';
+        btn1.className = 'flex-1 py-1 px-1.5 rounded text-gray-700 hover:bg-gray-200 text-center truncate transition';
+      }
+    }
 
     async function initApp() {
       const res = await fetch('/api/config');
       configBases = await res.json();
+      populateBivSelects();
       onNivelChanged();
+    }
+
+    function populateBivSelects() {
+      const b1 = document.getElementById('biv-base-1');
+      const b2 = document.getElementById('biv-base-2');
+      if (!b1 || !b2) return;
+      b1.innerHTML = '';
+      b2.innerHTML = '';
+      const nivel = document.getElementById('nivel-select')?.value || 'departamento';
+      const keys = Object.keys(configBases).filter(k => configBases[k].niveles.includes(nivel));
+      keys.forEach(k => {
+        b1.appendChild(new Option(configBases[k].label, k));
+        b2.appendChild(new Option(configBases[k].label, k));
+      });
+      if (keys.length > 1) b2.value = keys[1];
+      onBivBase1Changed();
+      onBivBase2Changed();
     }
 
     function onNivelChanged() {
       const nivel = document.getElementById('nivel-select').value;
-      document.getElementById('map-nivel-select').value = nivel;
       const baseSelect = document.getElementById('base-select');
       baseSelect.innerHTML = '';
 
@@ -187,12 +485,8 @@
           baseSelect.appendChild(opt);
         }
       });
+      populateBivSelects();
       onBaseChanged();
-    }
-
-    function cambiarNivelDesdeMapa(nivel) {
-      document.getElementById('nivel-select').value = nivel;
-      onNivelChanged();
     }
 
     function onBaseChanged() {
@@ -207,13 +501,11 @@
         opt.textContent = ind.label;
         indSelect.appendChild(opt);
       });
-      renderMapIndicatorList(item.indicadores);
 
       const contAnios = document.getElementById('contenedor-anios');
       if (item.tiene_anios) {
         contAnios.classList.remove('hidden');
-        document.getElementById('anio-min').value = item.min_anio;
-        document.getElementById('anio-max').value = item.max_anio;
+        setupDualSlider('slider-uni', item.min_anio, item.max_anio, item.min_anio, item.max_anio);
       } else {
         contAnios.classList.add('hidden');
       }
@@ -221,12 +513,173 @@
       cargarDatos();
     }
 
+    // --- TOGGLE INVERT PALETTE ---
+    function toggleInvertPalette() {
+      isInvertedPalette = !isInvertedPalette;
+      const label = document.getElementById('label-invert-status');
+      if (label) {
+        if (!isInvertedPalette) {
+          label.textContent = 'Azul Alto / Rojo Bajo';
+          label.className = 'text-[9.5px] text-emerald-800 font-bold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded';
+        } else {
+          label.textContent = 'Rojo Alto / Azul Bajo';
+          label.className = 'text-[9.5px] text-rose-800 font-bold bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded';
+        }
+      }
+      actualizarCapaMapa();
+    }
+
+    // --- REUSABLE DUAL SLIDER WITH ANTI-TRAP LOGIC ---
+    function setupDualSlider(idPrefix, minLimit, maxLimit, defaultMin, defaultMax) {
+      sliderBounds[idPrefix] = { min: minLimit, max: maxLimit };
+      const sMin = document.getElementById(`${idPrefix}-min`);
+      const sMax = document.getElementById(`${idPrefix}-max`);
+      if (!sMin || !sMax) return;
+      sMin.min = minLimit; sMin.max = maxLimit; sMin.value = defaultMin;
+      sMax.min = minLimit; sMax.max = maxLimit; sMax.value = defaultMax;
+      sMin.style.zIndex = '3';
+      sMax.style.zIndex = '4';
+      updateDualSliderDisplay(idPrefix);
+    }
+
+    function onSliderContainerPointerDown(e, idPrefix) {
+      const bounds = sliderBounds[idPrefix] || { min: 2000, max: 2024 };
+      const rect = e.currentTarget.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      const clickVal = bounds.min + ratio * (bounds.max - bounds.min);
+      
+      const sMin = document.getElementById(`${idPrefix}-min`);
+      const sMax = document.getElementById(`${idPrefix}-max`);
+      if (!sMin || !sMax) return;
+      const minVal = parseInt(sMin.value, 10);
+      const maxVal = parseInt(sMax.value, 10);
+
+      if (Math.abs(clickVal - minVal) < Math.abs(clickVal - maxVal) || clickVal < minVal) {
+        sMin.style.zIndex = '10';
+        sMax.style.zIndex = '4';
+      } else {
+        sMax.style.zIndex = '10';
+        sMin.style.zIndex = '4';
+      }
+    }
+
+    function onSliderContainerPointerMove(e, idPrefix) {
+      const sMin = document.getElementById(`${idPrefix}-min`);
+      const sMax = document.getElementById(`${idPrefix}-max`);
+      if (!sMin || !sMax) return;
+      const minVal = parseInt(sMin.value, 10);
+      const maxVal = parseInt(sMax.value, 10);
+      if (minVal === maxVal) {
+        const bounds = sliderBounds[idPrefix] || { min: 2000, max: 2024 };
+        const rect = e.currentTarget.getBoundingClientRect();
+        const ratio = (e.clientX - rect.left) / rect.width;
+        const currentRatio = (minVal - bounds.min) / (bounds.max - bounds.min || 1);
+        if (ratio < currentRatio) {
+          sMin.style.zIndex = '10';
+          sMax.style.zIndex = '4';
+        } else {
+          sMax.style.zIndex = '10';
+          sMin.style.zIndex = '4';
+        }
+      }
+    }
+
+    function onDualSliderInput(idPrefix, changedHandle) {
+      const sMin = document.getElementById(`${idPrefix}-min`);
+      const sMax = document.getElementById(`${idPrefix}-max`);
+      let minVal = parseInt(sMin.value, 10);
+      let maxVal = parseInt(sMax.value, 10);
+
+      if (changedHandle === 'min') {
+        sMin.style.zIndex = '10';
+        sMax.style.zIndex = '4';
+        if (minVal > maxVal) sMin.value = maxVal;
+      } else if (changedHandle === 'max') {
+        sMax.style.zIndex = '10';
+        sMin.style.zIndex = '4';
+        if (maxVal < minVal) sMax.value = minVal;
+      }
+
+      updateDualSliderDisplay(idPrefix);
+
+      clearTimeout(sliderDebounceTimer);
+      sliderDebounceTimer = setTimeout(() => {
+        onDualSliderCommit(idPrefix);
+      }, 350);
+    }
+
+    function onDualSliderCommit(idPrefix) {
+      clearTimeout(sliderDebounceTimer);
+      if (idPrefix === 'slider-uni') {
+        cargarDatos();
+      } else if (idPrefix === 'slider-biv1' || idPrefix === 'slider-biv2') {
+        cargarDatosBivariados();
+      }
+    }
+
+    function updateDualSliderDisplay(idPrefix) {
+      const bounds = sliderBounds[idPrefix] || { min: 2000, max: 2024 };
+      const sMin = document.getElementById(`${idPrefix}-min`);
+      const sMax = document.getElementById(`${idPrefix}-max`);
+      const highlight = document.getElementById(`${idPrefix}-highlight`);
+      const minLabel = document.getElementById(`${idPrefix}-min-val`);
+      const maxLabel = document.getElementById(`${idPrefix}-max-val`);
+
+      if (!sMin || !sMax) return;
+      const minVal = parseInt(sMin.value, 10);
+      const maxVal = parseInt(sMax.value, 10);
+
+      if (minLabel) minLabel.textContent = minVal;
+      if (maxLabel) maxLabel.textContent = maxVal;
+
+      const range = bounds.max - bounds.min || 1;
+      const leftPercent = ((minVal - bounds.min) / range) * 100;
+      const rightPercent = ((maxVal - bounds.min) / range) * 100;
+
+      if (highlight) {
+        highlight.style.left = `${leftPercent}%`;
+        highlight.style.width = `${rightPercent - leftPercent}%`;
+      }
+    }
+
+    function onMapModeChanged(mode) {
+      currentMapMode = mode;
+      const secUni = document.getElementById('seccion-filtros-univariado');
+      const secBiv = document.getElementById('seccion-filtros-bivariado');
+      const bivLegend = document.getElementById('bivariate-legend');
+      const bivRankToggle = document.getElementById('biv-ranking-var-toggle');
+
+      const invCont = document.getElementById('contenedor-invert-palette');
+      if (mode === 'bivariado') {
+        secUni.classList.add('hidden');
+        secBiv.classList.remove('hidden');
+        bivLegend.classList.remove('hidden');
+        if (invCont) invCont.classList.add('hidden');
+        if (bivRankToggle) bivRankToggle.classList.remove('hidden');
+        if (legendControl && mapInstance) mapInstance.removeControl(legendControl);
+        updateBivRankingButtons();
+        cargarDatosBivariados();
+      } else {
+        secUni.classList.remove('hidden');
+        secBiv.classList.add('hidden');
+        bivLegend.classList.add('hidden');
+        if (invCont && !document.getElementById('vista-mapa').classList.contains('hidden')) invCont.classList.remove('hidden');
+        if (bivRankToggle) bivRankToggle.classList.add('hidden');
+        if (legendControl && mapInstance) legendControl.addTo(mapInstance);
+        const headerTh = document.getElementById('ranking-metric-header');
+        if (headerTh) headerTh.textContent = currentUniLabel || 'Valor';
+        actualizarCapaMapa();
+      }
+    }
+
     async function cargarDatos() {
       const nivel = document.getElementById('nivel-select').value;
       const base = document.getElementById('base-select').value;
       const indicador = document.getElementById('indicador-select').value;
-      const anioMin = document.getElementById('anio-min').value || 2000;
-      const anioMax = document.getElementById('anio-max').value || 2024;
+      const sMin = document.getElementById('slider-uni-min');
+      const sMax = document.getElementById('slider-uni-max');
+      const anioMin = sMin ? sMin.value : 2000;
+      const anioMax = sMax ? sMax.value : 2024;
 
       try {
         const res = await fetch(`/api/data?nivel=${nivel}&base=${base}&indicador=${indicador}&anio_min=${anioMin}&anio_max=${anioMax}`);
@@ -234,10 +687,9 @@
         if (!res.ok) throw new Error(data.error || 'No se pudieron cargar los datos');
         datosActuales = data;
         renderTabla(data);
-        actualizarSelectColumnasMapa(data.columns);
         renderRanking();
 
-        if (!document.getElementById('vista-mapa').classList.contains('hidden')) {
+        if (!document.getElementById('vista-mapa').classList.contains('hidden') && currentMapMode === 'univariado') {
           actualizarCapaMapa();
         }
       } catch (err) {
@@ -246,26 +698,72 @@
       }
     }
 
-    function renderMapIndicatorList(indicadores) {
-      const list = document.getElementById('map-indicator-list');
-      list.innerHTML = '';
-      indicadores.forEach(ind => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'map-indicator';
-        button.dataset.indicator = ind.id;
-        button.textContent = ind.label;
-        button.onclick = () => {
-          document.getElementById('indicador-select').value = ind.id;
-          cargarDatos();
-          document.querySelectorAll('.map-indicator').forEach(item => item.classList.remove('active'));
-          button.classList.add('active');
-        };
-        list.appendChild(button);
-      });
-      const current = document.getElementById('indicador-select').value;
-      const active = list.querySelector(`[data-indicator="${current}"]`);
-      if (active) active.classList.add('active');
+    // --- BIVARIATE HANDLERS ---
+    function onBivBase1Changed() {
+      const baseKey = document.getElementById('biv-base-1').value;
+      const item = configBases[baseKey];
+      if (!item) return;
+      const sel = document.getElementById('biv-ind-1');
+      sel.innerHTML = '';
+      item.indicadores.forEach(ind => sel.appendChild(new Option(ind.label, ind.id)));
+      
+      const box = document.getElementById('biv-slider-box-1');
+      if (item.tiene_anios) {
+        box.classList.remove('hidden');
+        setupDualSlider('slider-biv1', item.min_anio, item.max_anio, item.min_anio, item.max_anio);
+      } else {
+        box.classList.add('hidden');
+      }
+      cargarDatosBivariados();
+    }
+
+    function onBivBase2Changed() {
+      const baseKey = document.getElementById('biv-base-2').value;
+      const item = configBases[baseKey];
+      if (!item) return;
+      const sel = document.getElementById('biv-ind-2');
+      sel.innerHTML = '';
+      item.indicadores.forEach(ind => sel.appendChild(new Option(ind.label, ind.id)));
+      
+      const box = document.getElementById('biv-slider-box-2');
+      if (item.tiene_anios) {
+        box.classList.remove('hidden');
+        setupDualSlider('slider-biv2', item.min_anio, item.max_anio, item.min_anio, item.max_anio);
+      } else {
+        box.classList.add('hidden');
+      }
+      cargarDatosBivariados();
+    }
+
+    async function cargarDatosBivariados() {
+      if (currentMapMode !== 'bivariado') return;
+      const nivel = document.getElementById('nivel-select').value;
+      const base1 = document.getElementById('biv-base-1').value;
+      const ind1 = document.getElementById('biv-ind-1').value;
+      const base2 = document.getElementById('biv-base-2').value;
+      const ind2 = document.getElementById('biv-ind-2').value;
+
+      const sMin1 = document.getElementById('slider-biv1-min');
+      const sMax1 = document.getElementById('slider-biv1-max');
+      const sMin2 = document.getElementById('slider-biv2-min');
+      const sMax2 = document.getElementById('slider-biv2-max');
+
+      const min1 = sMin1 ? sMin1.value : 2000;
+      const max1 = sMax1 ? sMax1.value : 2025;
+      const min2 = sMin2 ? sMin2.value : 2000;
+      const max2 = sMax2 ? sMax2.value : 2025;
+
+      try {
+        const [r1, r2] = await Promise.all([
+          fetch(`/api/data?nivel=${nivel}&base=${base1}&indicador=${ind1}&anio_min=${min1}&anio_max=${max1}`),
+          fetch(`/api/data?nivel=${nivel}&base=${base2}&indicador=${ind2}&anio_min=${min2}&anio_max=${max2}`)
+        ]);
+        datosBiv1 = await r1.json();
+        datosBiv2 = await r2.json();
+        actualizarCapaBivariada();
+      } catch (e) {
+        console.error("Error datos bivariados:", e);
+      }
     }
 
     function renderTabla(data) {
@@ -303,72 +801,200 @@
       });
     }
 
-    function actualizarSelectColumnasMapa(cols) {
-      const sel = document.getElementById('col-mapa-select');
-      sel.innerHTML = '';
-      const validCols = cols.filter(c => c.toLowerCase() !== 'ubigeo' && c.toLowerCase() !== 'nombre');
-      validCols.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c;
-        opt.textContent = c;
-        sel.appendChild(opt);
-      });
-    }
-
+    // --- COLOR PALETTE WITH INVERT SUPPORT ---
     function getColor(val, min, max) {
       if (val === null || val === undefined || isNaN(val)) return '#e2e8f0';
+      if (min === max) return '#fee08b';
       const t = (val - min) / ((max - min) || 1);
-            return t > 0.8 ? '#b2182b' :
-              t > 0.6 ? '#ef8a62' :
-              t > 0.4 ? '#fddbc7' :
-              t > 0.2 ? '#67a9cf' : '#2166ac';
+      
+      if (!isInvertedPalette) {
+        // Normal: Highest = Blue, Lowest = Red
+        return t > 0.8 ? '#2166ac' :
+               t > 0.6 ? '#67a9cf' :
+               t > 0.4 ? '#fee08b' :
+               t > 0.2 ? '#f46d43' : '#b2182b';
+      } else {
+        // Invertido: Highest = Red, Lowest = Blue
+        return t > 0.8 ? '#b2182b' :
+               t > 0.6 ? '#f46d43' :
+               t > 0.4 ? '#fee08b' :
+               t > 0.2 ? '#67a9cf' : '#2166ac';
+      }
     }
 
-      function renderRanking() {
-        const body = document.getElementById('ranking-body');
-        body.innerHTML = '';
-        const col = document.getElementById('col-mapa-select')?.value;
-        if (!col || !datosActuales.rows) return;
-        const mode = document.querySelector('input[name="ranking-mode"]:checked')?.value || rankingMode;
-        rankingMode = mode;
-        const rows = datosActuales.rows
-          .map(row => ({ name: row.nombre || row.ubigeo || 'Sin nombre', value: Number(row[col]) }))
-          .filter(row => Number.isFinite(row.value))
-          .sort((a, b) => mode === 'max' ? b.value - a.value : a.value - b.value)
-          .slice(0, 10);
-        rows.forEach(row => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${row.name}</td><td>${row.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>`;
-          body.appendChild(tr);
-        });
-        if (!rows.length) body.innerHTML = '<tr><td colspan="2">No hay valores numéricos</td></tr>';
+    // --- RANKING INTERACTIVITY (UNIVARIADO & BIVARIADO) ---
+    function renderRanking() {
+      if (currentMapMode === 'bivariado') {
+        renderRankingBivariado();
+        return;
       }
 
+      const body = document.getElementById('ranking-body');
+      body.innerHTML = '';
+      const headerTh = document.getElementById('ranking-metric-header');
+      if (headerTh) headerTh.textContent = currentUniLabel || 'Valor';
+
+      const mode = document.querySelector('input[name="ranking-mode"]:checked')?.value || rankingMode;
+      rankingMode = mode;
+
+      const rows = Object.keys(currentUniMap)
+        .filter(u => currentUniMap[u] && !isNaN(currentUniMap[u].val))
+        .map(u => ({
+          ubigeo: u,
+          name: currentUniMap[u].nom || u || 'Sin nombre',
+          value: currentUniMap[u].val
+        }))
+        .sort((a, b) => mode === 'max' ? b.value - a.value : a.value - b.value)
+        .slice(0, 10);
+
+      rows.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.title = 'Haz clic para enfocar en el mapa';
+        tr.innerHTML = `<td>${row.name}</td><td>${row.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>`;
+        
+        tr.onmouseenter = () => {
+          const layer = layersByUbigeo[row.ubigeo];
+          if (layer) {
+            layer.setStyle({ weight: 3, color: '#073B3A', fillOpacity: 1 });
+            layer.bringToFront();
+            layer.openTooltip();
+          }
+        };
+
+        tr.onmouseleave = () => {
+          const layer = layersByUbigeo[row.ubigeo];
+          if (layer && geoJsonLayer) {
+            geoJsonLayer.resetStyle(layer);
+            layer.closeTooltip();
+          }
+        };
+
+        tr.onclick = () => {
+          const layer = layersByUbigeo[row.ubigeo];
+          if (layer && mapInstance) {
+            if (layer.getBounds && layer.getBounds().isValid()) {
+              mapInstance.fitBounds(layer.getBounds(), { maxZoom: 9, padding: [40, 40] });
+            }
+            layer.setStyle({ weight: 3.5, color: '#073B3A', fillOpacity: 1 });
+            layer.bringToFront();
+            layer.openTooltip();
+          }
+        };
+
+        body.appendChild(tr);
+      });
+      if (!rows.length) body.innerHTML = '<tr><td colspan="2">No hay valores numéricos</td></tr>';
+    }
+
+    function renderRankingBivariado() {
+      const body = document.getElementById('ranking-body');
+      body.innerHTML = '';
+      const mode = document.querySelector('input[name="ranking-mode"]:checked')?.value || rankingMode;
+      rankingMode = mode;
+
+      const headerTh = document.getElementById('ranking-metric-header');
+      if (headerTh) {
+        headerTh.textContent = (bivRankingVar === 1 ? currentBivLabel1 : currentBivLabel2) || 'Valor';
+      }
+
+      const mapTarget = bivRankingVar === 1 ? currentBivMap1 : currentBivMap2;
+      const otherMap = bivRankingVar === 1 ? currentBivMap2 : currentBivMap1;
+
+      const rows = Object.keys(mapTarget)
+        .filter(u => mapTarget[u] && !isNaN(mapTarget[u].val))
+        .map(u => ({
+          ubigeo: u,
+          name: mapTarget[u].nom || (otherMap[u] ? otherMap[u].nom : u),
+          value: mapTarget[u].val
+        }))
+        .sort((a, b) => mode === 'max' ? b.value - a.value : a.value - b.value)
+        .slice(0, 10);
+
+      rows.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.title = 'Haz clic para enfocar en el mapa';
+        tr.innerHTML = `<td>${row.name}</td><td>${row.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>`;
+
+        tr.onmouseenter = () => {
+          const layer = layersByUbigeo[row.ubigeo];
+          if (layer) {
+            layer.setStyle({ weight: 3, color: '#073B3A', fillOpacity: 1 });
+            layer.bringToFront();
+            layer.openTooltip();
+          }
+        };
+
+        tr.onmouseleave = () => {
+          const layer = layersByUbigeo[row.ubigeo];
+          if (layer && geoJsonLayer) {
+            geoJsonLayer.resetStyle(layer);
+            layer.closeTooltip();
+          }
+        };
+
+        tr.onclick = () => {
+          const layer = layersByUbigeo[row.ubigeo];
+          if (layer && mapInstance) {
+            if (layer.getBounds && layer.getBounds().isValid()) {
+              mapInstance.fitBounds(layer.getBounds(), { maxZoom: 9, padding: [40, 40] });
+            }
+            layer.setStyle({ weight: 3.5, color: '#073B3A', fillOpacity: 1 });
+            layer.bringToFront();
+            layer.openTooltip();
+          }
+        };
+
+        body.appendChild(tr);
+      });
+      if (!rows.length) body.innerHTML = '<tr><td colspan="2">No hay valores numéricos</td></tr>';
+    }
+
     async function actualizarCapaMapa() {
-      if (!mapInstance) return;
+      if (!mapInstance || currentMapMode !== 'univariado') return;
       const nivel = document.getElementById('nivel-select').value;
-      const col = document.getElementById('col-mapa-select')?.value;
       const status = document.getElementById('map-status');
-      if (!col) {
+
+      const fullLbl = document.getElementById('indicador-select')?.selectedOptions[0]?.textContent || 'Indicador';
+      const compactLbl = cleanIndicatorName(fullLbl);
+      
+      const sMin = document.getElementById('slider-uni-min');
+      const sMax = document.getElementById('slider-uni-max');
+      const contAnios = document.getElementById('contenedor-anios');
+      const hasAnios = contAnios && !contAnios.classList.contains('hidden');
+      
+      let displayLabel = compactLbl;
+      if (hasAnios && sMin && sMax) {
+        displayLabel += sMin.value === sMax.value ? ` (${sMin.value})` : ` (${sMin.value}-${sMax.value})`;
+      }
+
+      currentUniLabel = displayLabel;
+      status.textContent = `Mapa: ${displayLabel}`;
+
+      const cols = (datosActuales.columns || []).filter(c => c.toLowerCase() !== 'ubigeo' && c.toLowerCase() !== 'nombre');
+      if (!cols.length || !datosActuales.rows) {
         status.textContent = 'Sin indicador numérico';
         renderRanking();
         return;
       }
-      status.textContent = `Mapa: ${col}`;
 
       const mapaVal = {};
       let vals = [];
       datosActuales.rows.forEach(r => {
         const u = String(r.ubigeo).trim();
-        const v = parseFloat(r[col]);
-        if (!isNaN(v)) {
-          mapaVal[u] = { val: v, nom: r.nombre || '' };
-          vals.push(v);
+        const rVals = cols.map(c => parseFloat(r[c])).filter(v => !isNaN(v));
+        if (rVals.length) {
+          const avg = rVals.reduce((a, b) => a + b, 0) / rVals.length;
+          mapaVal[u] = { val: avg, nom: r.nombre || '' };
+          vals.push(avg);
         }
       });
 
+      currentUniMap = mapaVal;
+
       const minVal = vals.length ? Math.min(...vals) : 0;
       const maxVal = vals.length ? Math.max(...vals) : 1;
+
+      updateVerticalLegend(minVal, maxVal);
 
       let geoData = geoJsonCache[nivel];
       if (!geoData) {
@@ -382,6 +1008,7 @@
         }
       }
 
+      layersByUbigeo = {};
       if (geoJsonLayer) mapInstance.removeLayer(geoJsonLayer);
 
       geoJsonLayer = L.geoJSON(geoData, {
@@ -392,15 +1019,16 @@
             fillColor: info ? getColor(info.val, minVal, maxVal) : '#f1f5f9',
             weight: 0.8,
             color: '#ffffff',
-            fillOpacity: 0.8
+            fillOpacity: 0.85
           };
         },
         onEachFeature: (f, l) => {
           const u = String(f.properties.ubigeo || '').trim();
+          layersByUbigeo[u] = l;
           const info = mapaVal[u];
-          const txtVal = info ? Number(info.val).toLocaleString() : 'Sin registro';
+          const txtVal = info ? Number(info.val).toLocaleString(undefined, { maximumFractionDigits: 2 }) : 'Sin registro';
           const nom = info ? info.nom : 'Zona';
-          l.bindTooltip(`<strong>${nom}</strong><br/>UBIGEO: ${u}<br/>${col}: ${txtVal}`, { sticky: true });
+          l.bindTooltip(`<strong>${nom}</strong><br/>UBIGEO: ${u}<br/>${displayLabel}: ${txtVal}`, { sticky: true });
         }
       }).addTo(mapInstance);
 
@@ -410,6 +1038,209 @@
       renderRanking();
     }
 
+    async function actualizarCapaBivariada() {
+      if (!mapInstance || currentMapMode !== 'bivariado') return;
+      const nivel = document.getElementById('nivel-select').value;
+
+      const cols1 = (datosBiv1.columns || []).filter(c => c.toLowerCase() !== 'ubigeo' && c.toLowerCase() !== 'nombre');
+      const cols2 = (datosBiv2.columns || []).filter(c => c.toLowerCase() !== 'ubigeo' && c.toLowerCase() !== 'nombre');
+
+      const fullLbl1 = document.getElementById('biv-ind-1')?.selectedOptions[0]?.textContent || 'Var 1';
+      const fullLbl2 = document.getElementById('biv-ind-2')?.selectedOptions[0]?.textContent || 'Var 2';
+
+      const compactLbl1 = cleanIndicatorName(fullLbl1);
+      const compactLbl2 = cleanIndicatorName(fullLbl2);
+
+      document.getElementById('map-status').textContent = `Bivariado: ${compactLbl1} × ${compactLbl2}`;
+      document.getElementById('biv-axis-label-x').textContent = `${compactLbl1} →`;
+      document.getElementById('biv-axis-label-y').textContent = `${compactLbl2} →`;
+
+      // Extract aggregate/mean values across columns for each row
+      const vals1 = [];
+      const map1 = {};
+      (datosBiv1.rows || []).forEach(r => {
+        const u = String(r.ubigeo).trim();
+        const rVals = cols1.map(c => parseFloat(r[c])).filter(v => !isNaN(v));
+        if (rVals.length) {
+          const avg = rVals.reduce((a, b) => a + b, 0) / rVals.length;
+          map1[u] = { val: avg, nom: r.nombre || '' };
+          vals1.push(avg);
+        }
+      });
+
+      const vals2 = [];
+      const map2 = {};
+      (datosBiv2.rows || []).forEach(r => {
+        const u = String(r.ubigeo).trim();
+        const rVals = cols2.map(c => parseFloat(r[c])).filter(v => !isNaN(v));
+        if (rVals.length) {
+          const avg = rVals.reduce((a, b) => a + b, 0) / rVals.length;
+          map2[u] = { val: avg, nom: r.nombre || '' };
+          vals2.push(avg);
+        }
+      });
+
+      currentBivMap1 = map1;
+      currentBivMap2 = map2;
+      currentBivLabel1 = compactLbl1;
+      currentBivLabel2 = compactLbl2;
+      updateBivRankingButtons();
+
+      const breaks1 = getTerciles(vals1);
+      const breaks2 = getTerciles(vals2);
+
+      renderBivariateGrid(map1, map2, breaks1, breaks2);
+
+      let geoData = geoJsonCache[nivel];
+      if (!geoData) {
+        try {
+          const resp = await fetch(`/api/geojson/${nivel}`);
+          geoData = await resp.json();
+          geoJsonCache[nivel] = geoData;
+        } catch (e) {
+          console.error("Error geojson:", e);
+          return;
+        }
+      }
+
+      layersByUbigeo = {};
+      if (geoJsonLayer) mapInstance.removeLayer(geoJsonLayer);
+
+      geoJsonLayer = L.geoJSON(geoData, {
+        style: f => {
+          const u = String(f.properties.ubigeo || '').trim();
+          const d1 = map1[u];
+          const d2 = map2[u];
+          if (!d1 || !d2) return { fillColor: '#f1f5f9', weight: 0.8, color: '#ffffff', fillOpacity: 0.8 };
+          
+          const bx = getTercileIndex(d1.val, breaks1);
+          const by = getTercileIndex(d2.val, breaks2);
+          const color = BIV_MATRIX_3x3[by][bx];
+          return {
+            fillColor: color,
+            weight: 0.8,
+            color: '#ffffff',
+            fillOpacity: 0.88
+          };
+        },
+        onEachFeature: (f, l) => {
+          const u = String(f.properties.ubigeo || '').trim();
+          layersByUbigeo[u] = l;
+          const d1 = map1[u];
+          const d2 = map2[u];
+          const nom = d1?.nom || d2?.nom || 'Zona';
+          const v1Txt = d1 ? Number(d1.val).toLocaleString(undefined, { maximumFractionDigits: 2 }) : 'Sin datos';
+          const v2Txt = d2 ? Number(d2.val).toLocaleString(undefined, { maximumFractionDigits: 2 }) : 'Sin datos';
+          const bx = d1 ? getTercileIndex(d1.val, breaks1) : -1;
+          const by = d2 ? getTercileIndex(d2.val, breaks2) : -1;
+
+          l.bindTooltip(`<strong>${nom}</strong><br/>UBIGEO: ${u}<br/>${compactLbl1}: ${v1Txt}<br/>${compactLbl2}: ${v2Txt}`, { sticky: true });
+
+          l.on('mouseover', () => {
+            l.setStyle({ weight: 2.2, color: '#073B3A', fillOpacity: 1 });
+            l.bringToFront();
+            highlightBivCell(bx, by);
+          });
+          l.on('mouseout', () => {
+            geoJsonLayer.resetStyle(l);
+            clearBivHighlights();
+          });
+        }
+      }).addTo(mapInstance);
+
+      if (geoJsonLayer.getBounds().isValid()) {
+        mapInstance.fitBounds(geoJsonLayer.getBounds());
+      }
+      renderRankingBivariado();
+    }
+
+    function getTerciles(arr) {
+      const sorted = arr.filter(v => !isNaN(v)).sort((a, b) => a - b);
+      if (!sorted.length) return [0, 0];
+      return [
+        sorted[Math.floor(sorted.length / 3)],
+        sorted[Math.floor(sorted.length * 2 / 3)]
+      ];
+    }
+
+    function getTercileIndex(val, breaks) {
+      if (val <= breaks[0]) return 0;
+      if (val <= breaks[1]) return 1;
+      return 2;
+    }
+
+    function renderBivariateGrid(map1, map2, breaks1, breaks2) {
+      const container = document.getElementById('biv-grid-container');
+      container.innerHTML = '';
+      for (let y = 2; y >= 0; y--) {
+        for (let x = 0; x <= 2; x++) {
+          const cell = document.createElement('div');
+          cell.className = 'biv-cell';
+          cell.id = `biv-cell-${x}-${y}`;
+          cell.style.backgroundColor = BIV_MATRIX_3x3[y][x];
+          
+          cell.onmouseenter = () => {
+            if (!geoJsonLayer) return;
+            geoJsonLayer.eachLayer(l => {
+              const u = String(l.feature.properties.ubigeo || '').trim();
+              const d1 = map1[u];
+              const d2 = map2[u];
+              const bx = d1 ? getTercileIndex(d1.val, breaks1) : -1;
+              const by = d2 ? getTercileIndex(d2.val, breaks2) : -1;
+              if (bx === x && by === y) {
+                l.setStyle({ weight: 2.2, color: '#073B3A', fillOpacity: 1 });
+              } else {
+                l.setStyle({ fillOpacity: 0.15, weight: 0.3 });
+              }
+            });
+          };
+
+          cell.onmouseleave = () => {
+            if (geoJsonLayer) geoJsonLayer.eachLayer(l => geoJsonLayer.resetStyle(l));
+          };
+
+          container.appendChild(cell);
+        }
+      }
+    }
+
+    function highlightBivCell(x, y) {
+      clearBivHighlights();
+      if (x >= 0 && y >= 0) {
+        const c = document.getElementById(`biv-cell-${x}-${y}`);
+        if (c) c.classList.add('active');
+      }
+    }
+
+    function clearBivHighlights() {
+      document.querySelectorAll('.biv-cell.active').forEach(c => c.classList.remove('active'));
+    }
+
+    function updateVerticalLegend(min, max) {
+      const fmt = n => Number(n).toLocaleString(undefined, { maximumFractionDigits: 1 });
+      const mid = (min + max) / 2;
+      const q1 = min + (max - min) * 0.25;
+      const q3 = min + (max - min) * 0.75;
+
+      const bgGradient = !isInvertedPalette
+        ? 'linear-gradient(to bottom, #2166ac 0%, #67a9cf 25%, #fee08b 50%, #f46d43 75%, #b2182b 100%)'
+        : 'linear-gradient(to bottom, #b2182b 0%, #f46d43 25%, #fee08b 50%, #67a9cf 75%, #2166ac 100%)';
+
+      const container = document.getElementById('vertical-legend-container');
+      if (container) {
+        container.innerHTML = `
+          <div class="vertical-bar" style="background: ${bgGradient}"></div>
+          <div class="vertical-values">
+            <span>${fmt(max)}</span>
+            <span>${fmt(q3)}</span>
+            <span>${fmt(mid)}</span>
+            <span>${fmt(q1)}</span>
+            <span>${fmt(min)}</span>
+          </div>
+        `;
+      }
+    }
+
     function initMap() {
       if (!mapInstance) {
         mapInstance = L.map('map').setView([-9.189967, -75.015152], 5);
@@ -417,25 +1248,57 @@
           maxZoom: 18,
           attribution: '&copy; OpenStreetMap'
         }).addTo(mapInstance);
+
+        legendControl = L.control({ position: 'bottomright' });
+        legendControl.onAdd = function() {
+          const div = L.DomUtil.create('div', 'vertical-legend');
+          div.id = 'vertical-legend-container';
+          return div;
+        };
+        legendControl.addTo(mapInstance);
       }
       setTimeout(() => { mapInstance.invalidateSize(); }, 200);
       actualizarCapaMapa();
     }
 
     function cambiarPestana(p) {
+      const invCont = document.getElementById('contenedor-invert-palette');
       if (p === 'data') {
         document.getElementById('vista-data').classList.remove('hidden');
         document.getElementById('vista-mapa').classList.add('hidden');
         document.getElementById('contenedor-col-mapa').classList.add('hidden');
+        document.getElementById('contenedor-modo-mapa').classList.add('hidden');
+        if (invCont) invCont.classList.add('hidden');
+        
+        document.getElementById('seccion-filtros-univariado').classList.remove('hidden');
+        document.getElementById('seccion-filtros-bivariado').classList.add('hidden');
+
         document.getElementById('tab-data-btn').classList.add('active');
         document.getElementById('tab-mapa-btn').classList.remove('active');
+        cargarDatos();
       } else {
         document.getElementById('vista-data').classList.add('hidden');
         document.getElementById('vista-mapa').classList.remove('hidden');
-        document.getElementById('contenedor-col-mapa').classList.remove('hidden');
+        document.getElementById('contenedor-modo-mapa').classList.remove('hidden');
+
+        if (currentMapMode === 'bivariado') {
+          document.getElementById('seccion-filtros-univariado').classList.add('hidden');
+          document.getElementById('seccion-filtros-bivariado').classList.remove('hidden');
+          if (invCont) invCont.classList.add('hidden');
+        } else {
+          document.getElementById('seccion-filtros-univariado').classList.remove('hidden');
+          document.getElementById('seccion-filtros-bivariado').classList.add('hidden');
+          if (invCont) invCont.classList.remove('hidden');
+        }
+
         document.getElementById('tab-data-btn').classList.remove('active');
         document.getElementById('tab-mapa-btn').classList.add('active');
         initMap();
+        if (currentMapMode === 'univariado') {
+          actualizarCapaMapa();
+        } else {
+          actualizarCapaBivariada();
+        }
         renderRanking();
       }
     }
