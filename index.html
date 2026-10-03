@@ -1263,36 +1263,43 @@
 
     function cambiarPestana(p) {
       const invCont = document.getElementById('contenedor-invert-palette');
+      const modoMapaCont = document.getElementById('contenedor-modo-mapa');
+      const secUni = document.getElementById('seccion-filtros-univariado');
+      const secBiv = document.getElementById('seccion-filtros-bivariado');
+      const vistaData = document.getElementById('vista-data');
+      const vistaMapa = document.getElementById('vista-mapa');
+      const tabDataBtn = document.getElementById('tab-data-btn');
+      const tabMapaBtn = document.getElementById('tab-mapa-btn');
+
       if (p === 'data') {
-        document.getElementById('vista-data').classList.remove('hidden');
-        document.getElementById('vista-mapa').classList.add('hidden');
-        document.getElementById('contenedor-col-mapa').classList.add('hidden');
-        document.getElementById('contenedor-modo-mapa').classList.add('hidden');
+        if (vistaData) vistaData.classList.remove('hidden');
+        if (vistaMapa) vistaMapa.classList.add('hidden');
+        if (modoMapaCont) modoMapaCont.classList.add('hidden');
         if (invCont) invCont.classList.add('hidden');
         
-        document.getElementById('seccion-filtros-univariado').classList.remove('hidden');
-        document.getElementById('seccion-filtros-bivariado').classList.add('hidden');
+        if (secUni) secUni.classList.remove('hidden');
+        if (secBiv) secBiv.classList.add('hidden');
 
-        document.getElementById('tab-data-btn').classList.add('active');
-        document.getElementById('tab-mapa-btn').classList.remove('active');
+        if (tabDataBtn) tabDataBtn.classList.add('active');
+        if (tabMapaBtn) tabMapaBtn.classList.remove('active');
         cargarDatos();
       } else {
-        document.getElementById('vista-data').classList.add('hidden');
-        document.getElementById('vista-mapa').classList.remove('hidden');
-        document.getElementById('contenedor-modo-mapa').classList.remove('hidden');
+        if (vistaData) vistaData.classList.add('hidden');
+        if (vistaMapa) vistaMapa.classList.remove('hidden');
+        if (modoMapaCont) modoMapaCont.classList.remove('hidden');
 
         if (currentMapMode === 'bivariado') {
-          document.getElementById('seccion-filtros-univariado').classList.add('hidden');
-          document.getElementById('seccion-filtros-bivariado').classList.remove('hidden');
+          if (secUni) secUni.classList.add('hidden');
+          if (secBiv) secBiv.classList.remove('hidden');
           if (invCont) invCont.classList.add('hidden');
         } else {
-          document.getElementById('seccion-filtros-univariado').classList.remove('hidden');
-          document.getElementById('seccion-filtros-bivariado').classList.add('hidden');
+          if (secUni) secUni.classList.remove('hidden');
+          if (secBiv) secBiv.classList.add('hidden');
           if (invCont) invCont.classList.remove('hidden');
         }
 
-        document.getElementById('tab-data-btn').classList.remove('active');
-        document.getElementById('tab-mapa-btn').classList.add('active');
+        if (tabDataBtn) tabDataBtn.classList.remove('active');
+        if (tabMapaBtn) tabMapaBtn.classList.add('active');
         initMap();
         if (currentMapMode === 'univariado') {
           actualizarCapaMapa();
