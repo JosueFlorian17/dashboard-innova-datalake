@@ -537,7 +537,7 @@ def temporal_response(df, prefix, conn, nivel=None):
     ).reset_index()
     full = names.merge(df, on=["ubigeo", "nombre"], how="left")
     full.columns = [f"{prefix}{column}" if isinstance(column, int) else column for column in full.columns]
-    full = full.fillna("")
+    full = full.fillna(0)
     return jsonify({"columns": list(full.columns), "rows": full.to_dict(orient="records")})
 
 def temporal_monthly_response(df, prefix, conn, anio_min, anio_max, nivel=None):
@@ -679,7 +679,7 @@ def get_data():
             "SELECT ubigeo, valor FROM fact_census WHERE nivel_geo = ? AND variable = ?",
             conn, params=(nivel, indicador),
         )
-        df = with_names(df, conn, nivel=nivel).rename(columns={"valor": indicador}).fillna("")
+        df = with_names(df, conn, nivel=nivel).rename(columns={"valor": indicador}).fillna(0)
         result = jsonify({"columns": list(df.columns), "rows": df.to_dict(orient="records")})
     elif base == "endes":
         # Supports: vac_<vacuna>_<dosis>_<metric> or anemia_<metric>
@@ -750,7 +750,7 @@ def get_data():
 
         col_name = f"{vivienda_map[cat]}_{suffix}"
         df = pd.read_sql_query(f"SELECT ubigeo, {col_name} AS valor FROM dim_endes_vivienda", conn)
-        df = with_names(df, conn, nivel=nivel).rename(columns={"valor": indicador.upper()}).fillna("")
+        df = with_names(df, conn, nivel=nivel).rename(columns={"valor": indicador.upper()}).fillna(0)
         result = jsonify({"columns": list(df.columns), "rows": df.to_dict(orient="records")})
     elif base == "endes_sifilis":
         df = pd.read_sql_query("SELECT * FROM fact_endes_sifilis", conn)
@@ -767,7 +767,7 @@ def get_data():
         if not selected_cols:
             selected_cols = all_year_cols
         cols = ["ubigeo", "nombre"] + selected_cols
-        result = jsonify({"columns": cols, "rows": df[cols].fillna("").to_dict(orient="records")})
+        result = jsonify({"columns": cols, "rows": df[cols].fillna(0).to_dict(orient="records")})
     else:
         column = indicador
         if column not in {"primary_hcf", "secondary_hcf", "tertiary_hcf"}:
@@ -777,7 +777,7 @@ def get_data():
             f"SELECT ubigeo, {column} AS valor FROM dim_travel_time WHERE nivel_geo = ?",
             conn, params=(nivel,),
         )
-        df = with_names(df, conn, nivel=nivel).rename(columns={"valor": column.upper()}).fillna("")
+        df = with_names(df, conn, nivel=nivel).rename(columns={"valor": column.upper()}).fillna(0)
         result = jsonify({"columns": list(df.columns), "rows": df.to_dict(orient="records")})
     conn.close()
     return result

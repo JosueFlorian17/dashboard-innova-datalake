@@ -879,14 +879,17 @@
             }
 
             metricCols.forEach(col => {
-              rowsByUbigeo[u][col] = (r[col] !== undefined && r[col] !== null) ? r[col] : '';
+              const val = r[col];
+              rowsByUbigeo[u][col] = (val !== undefined && val !== null && val !== '') ? val : 0;
             });
           });
         });
 
         const mergedRows = Object.values(rowsByUbigeo).map(row => {
           allOrderedCols.forEach(col => {
-            if (row[col] === undefined) row[col] = '';
+            if (row[col] === undefined || row[col] === null || row[col] === '') {
+              row[col] = (col === 'ubigeo' || col === 'nombre') ? (row[col] || '') : 0;
+            }
           });
           return row;
         });
@@ -1003,7 +1006,12 @@
         data.columns.forEach(col => {
           const td = document.createElement('td');
           td.className = "px-3 py-1.5 border-b text-gray-700 whitespace-nowrap";
-          td.textContent = (row[col] !== null && row[col] !== undefined) ? row[col] : '';
+          const rawVal = row[col];
+          const isGeo = (col === 'ubigeo' || col === 'nombre');
+          const displayVal = (rawVal !== null && rawVal !== undefined && rawVal !== '') 
+            ? rawVal 
+            : (isGeo ? '' : 0);
+          td.textContent = displayVal;
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
@@ -1773,7 +1781,12 @@
     function descargarCSV() {
       if (!datosActuales.rows || datosActuales.rows.length === 0) return;
       const header = datosActuales.columns.join(',');
-      const rows = datosActuales.rows.map(r => datosActuales.columns.map(c => `"${r[c] !== undefined ? r[c] : ''}"`).join(','));
+      const rows = datosActuales.rows.map(r => datosActuales.columns.map(c => {
+        const val = r[c];
+        const isGeo = (c === 'ubigeo' || c === 'nombre');
+        const cell = (val !== undefined && val !== null && val !== '') ? val : (isGeo ? '' : 0);
+        return `"${cell}"`;
+      }).join(','));
       const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [header, ...rows].join('\n');
       const link = document.createElement("a");
       link.setAttribute("href", encodeURI(csvContent));
