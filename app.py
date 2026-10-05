@@ -1001,43 +1001,12 @@ INVENTORY = [
     },
 ]
 
-def ensure_db():
-    if not DB_PATH.exists():
-        return
-    try:
-        with open(DB_PATH, "rb") as f:
-            header = f.read(30)
-            if b"version https://" in header:
-                import subprocess
-                print("Detectado puntero Git LFS en SQLite DB. Ejecutando 'git lfs pull'...")
-                subprocess.run(["git", "lfs", "install"], check=False)
-                subprocess.run(["git", "lfs", "pull"], check=False)
-    except Exception as e:
-        print(f"Aviso al verificar LFS: {e}")
-
-ensure_db()
-
 def get_db():
     if not DB_PATH.exists():
         raise FileNotFoundError(f"No existe la base de datos: {DB_PATH}")
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        return conn
-    except sqlite3.DatabaseError as e:
-        try:
-            with open(DB_PATH, "rb") as f:
-                if b"version https://" in f.read(30):
-                    import subprocess
-                    print("Error de base de datos debido a puntero LFS. Ejecutando 'git lfs pull'...")
-                    subprocess.run(["git", "lfs", "install"], check=False)
-                    subprocess.run(["git", "lfs", "pull"], check=False)
-                    conn = sqlite3.connect(DB_PATH)
-                    conn.row_factory = sqlite3.Row
-                    return conn
-        except Exception:
-            pass
-        raise e
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 def parse_year(value, default):
     try:

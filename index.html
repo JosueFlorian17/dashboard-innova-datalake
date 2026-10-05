@@ -843,8 +843,12 @@
       try {
         const promises = items.map(it => 
           fetch(`/api/data?nivel=${nivel}&base=${it.base}&indicador=${it.indicador}&anio_min=${anioMin}&anio_max=${anioMax}`)
-            .then(r => r.json())
-            .then(data => ({ data, item: it }))
+            .then(async r => {
+              if (!r.ok) return { data: null, item: it };
+              const data = await r.json().catch(() => null);
+              return { data, item: it };
+            })
+            .catch(() => ({ data: null, item: it }))
         );
 
         const results = await Promise.all(promises);
@@ -913,8 +917,11 @@
 
       try {
         const res = await fetch(`/api/data?nivel=${nivel}&base=${base}&indicador=${indicador}&anio_min=${anioMin}&anio_max=${anioMax}`);
+        if (!res.ok) {
+          throw new Error(`HTTP error ${res.status}`);
+        }
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'No se pudieron cargar los datos');
+        if (!data || data.error) throw new Error(data?.error || 'No se pudieron cargar los datos');
         
         datosActuales = data;
         if (!document.getElementById('vista-mapa').classList.contains('hidden') && currentMapMode === 'univariado') {
@@ -955,6 +962,7 @@
           fetch(`/api/data?nivel=${nivel}&base=${base1}&indicador=${ind1}&anio_min=${min1}&anio_max=${max1}`),
           fetch(`/api/data?nivel=${nivel}&base=${base2}&indicador=${ind2}&anio_min=${min2}&anio_max=${max2}`)
         ]);
+        if (!r1.ok || !r2.ok) throw new Error('Error al consultar datos bivariados');
         datosBiv1 = await r1.json();
         datosBiv2 = await r2.json();
 
@@ -1646,8 +1654,10 @@
       if (!inventoryData.length) {
         try {
           const res = await fetch('/api/inventory');
-          inventoryData = await res.json();
-          poblarFiltrosInventario();
+          if (res.ok) {
+            inventoryData = await res.json();
+            poblarFiltrosInventario();
+          }
         } catch (e) {
           console.error("Error al cargar inventario:", e);
         }

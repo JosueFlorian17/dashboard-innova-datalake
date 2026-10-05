@@ -3,7 +3,7 @@ services:
     name: dashboard-innova-datalake
     runtime: python
     buildCommand: git lfs install && git lfs pull && pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    startCommand: gunicorn --workers 2 --threads 4 --timeout 120 app:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
