@@ -195,7 +195,7 @@
       width: 12px;
       height: 130px;
       border-radius: 2px;
-      background: linear-gradient(to bottom, #2166ac 0%, #67a9cf 25%, #fee08b 50%, #f46d43 75%, #b2182b 100%);
+      background: linear-gradient(to bottom, #b2182b 0%, #f46d43 25%, #fee08b 50%, #67a9cf 75%, #2166ac 100%);
       box-shadow: inset 0 0 1px rgba(0,0,0,0.3);
     }
     .vertical-values {
@@ -359,7 +359,7 @@
               <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Escala de Color:</label>
               <button type="button" id="btn-invert-palette" onclick="toggleInvertPalette()" class="w-full border border-gray-300 hover:bg-gray-50 rounded px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition flex items-center justify-between">
                 <span>Invertir Colores</span>
-                <span id="label-invert-status" class="text-[9.5px] text-emerald-800 font-bold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Azul Alto / Rojo Bajo</span>
+                <span id="label-invert-status" class="text-[9.5px] text-rose-800 font-bold bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded">Rojo Alto / Azul Bajo</span>
               </button>
             </div>
 
@@ -470,8 +470,8 @@
           <section class="map-panel ranking-panel">
             <div class="map-panel-title">Ranking (Top 10)</div>
             <div class="ranking-options">
-              <label><input type="radio" name="ranking-mode" value="max" onchange="renderRanking()"> Max</label>
-              <label><input type="radio" name="ranking-mode" value="min" checked onchange="renderRanking()"> Min</label>
+              <label><input type="radio" name="ranking-mode" value="max" checked onchange="renderRanking()"> Max</label>
+              <label><input type="radio" name="ranking-mode" value="min" onchange="renderRanking()"> Min</label>
             </div>
             
             <div id="biv-ranking-var-toggle" class="hidden my-2 flex bg-gray-100 p-0.5 rounded border border-gray-200 text-[10px] font-semibold">
@@ -536,7 +536,7 @@
     let geoJsonCache = {};
     let layersByUbigeo = {};
     let datosActuales = { columns: [], rows: [] };
-    let rankingMode = 'min';
+    let rankingMode = 'max';
     let currentMapMode = 'univariado';
     let legendControl = null;
     let sliderDebounceTimer = null;
@@ -1062,11 +1062,11 @@
       const label = document.getElementById('label-invert-status');
       if (label) {
         if (!isInvertedPalette) {
-          label.textContent = 'Azul Alto / Rojo Bajo';
-          label.className = 'text-[9.5px] text-emerald-800 font-bold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded';
-        } else {
           label.textContent = 'Rojo Alto / Azul Bajo';
           label.className = 'text-[9.5px] text-rose-800 font-bold bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded';
+        } else {
+          label.textContent = 'Azul Alto / Rojo Bajo';
+          label.className = 'text-[9.5px] text-emerald-800 font-bold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded';
         }
       }
       actualizarCapaMapa();
@@ -1347,8 +1347,8 @@
       const q3 = min + (max - min) * 0.75;
 
       const bgGradient = !isInvertedPalette
-        ? 'linear-gradient(to bottom, #2166ac 0%, #67a9cf 25%, #fee08b 50%, #f46d43 75%, #b2182b 100%)'
-        : 'linear-gradient(to bottom, #b2182b 0%, #f46d43 25%, #fee08b 50%, #67a9cf 75%, #2166ac 100%)';
+        ? 'linear-gradient(to bottom, #b2182b 0%, #f46d43 25%, #fee08b 50%, #67a9cf 75%, #2166ac 100%)'
+        : 'linear-gradient(to bottom, #2166ac 0%, #67a9cf 25%, #fee08b 50%, #f46d43 75%, #b2182b 100%)';
 
       const container = document.getElementById('vertical-legend-container');
       if (container) {
@@ -1780,8 +1780,15 @@
       });
     }
 
+    const DOWNLOAD_PASSWORD = "InnovaLabDatalakePermission";
+
     function descargarInventarioCSV() {
       if (!filteredInventory.length) return;
+      const pass = prompt("Acceso Restringido: Ingrese la clave de autorización para descargar el catálogo:");
+      if (pass !== DOWNLOAD_PASSWORD) {
+        alert("Clave incorrecta o no autorizada.");
+        return;
+      }
       const headers = ["Grupo", "Indicador", "ID", "Descripcion", "Resolucion_Temporal", "Fuente"];
       const rows = filteredInventory.map(item => [
         `"${item.grupo}"`,
@@ -1802,6 +1809,11 @@
 
     function descargarCSV() {
       if (!datosActuales.rows || datosActuales.rows.length === 0) return;
+      const pass = prompt("Acceso Restringido: Ingrese la clave de autorización para descargar datos:");
+      if (pass !== DOWNLOAD_PASSWORD) {
+        alert("Clave incorrecta o no autorizada.");
+        return;
+      }
       const header = datosActuales.columns.join(',');
       const rows = datosActuales.rows.map(r => datosActuales.columns.map(c => {
         const val = r[c];
