@@ -193,7 +193,7 @@
     <nav class="flex h-full space-x-1">
       <button id="tab-data-btn" onclick="cambiarPestana('data')" class="nav-tab active px-5 h-full flex items-center text-sm font-semibold transition">Data</button>
       <button id="tab-mapa-btn" onclick="cambiarPestana('mapa')" class="nav-tab px-5 h-full flex items-center text-sm font-semibold transition">Mapa</button>
-      <button id="tab-inventario-btn" onclick="cambiarPestana('inventario')" class="nav-tab px-5 h-full flex items-center text-sm font-semibold transition">Inventario de Variables</button>
+      <button id="tab-inventario-btn" onclick="cambiarPestana('inventario')" class="nav-tab px-5 h-full flex items-center text-sm font-semibold transition">Inventario</button>
     </nav>
   </header>
 
@@ -549,14 +549,14 @@
 
     function getGroupBadgeClass(grupo) {
       const g = (grupo || '').toLowerCase();
-      if (g.includes('mortalidad')) return 'bg-rose-50 text-rose-800 border-rose-200';
-      if (g.includes('demografía') || g.includes('población')) return 'bg-blue-50 text-blue-800 border-blue-200';
-      if (g.includes('clima') || g.includes('medio')) return 'bg-teal-50 text-teal-800 border-teal-200';
-      if (g.includes('epidemiología') || g.includes('salud')) return 'bg-amber-50 text-amber-800 border-amber-200';
-      if (g.includes('socioeconómico') || g.includes('empleo')) return 'bg-indigo-50 text-indigo-800 border-indigo-200';
-      if (g.includes('educación')) return 'bg-purple-50 text-purple-800 border-purple-200';
-      if (g.includes('materno') || g.includes('vacunación')) return 'bg-pink-50 text-pink-800 border-pink-200';
-      if (g.includes('infraestructura') || g.includes('viaje')) return 'bg-emerald-50 text-emerald-800 border-emerald-200';
+      if (g.includes('población') || g.includes('poblacion')) return 'bg-blue-50 text-blue-800 border-blue-200';
+      if (g.includes('clima') || g.includes('ambiente')) return 'bg-teal-50 text-teal-800 border-teal-200';
+      if (g.includes('salud') || g.includes('mortalidad')) return 'bg-rose-50 text-rose-800 border-rose-200';
+      if (g.includes('endes')) return 'bg-amber-50 text-amber-800 border-amber-200';
+      if (g.includes('censo')) return 'bg-indigo-50 text-indigo-800 border-indigo-200';
+      if (g.includes('misceláneo') || g.includes('miscelaneo') || g.includes('viaje') || g.includes('pobreza')) return 'bg-emerald-50 text-emerald-800 border-emerald-200';
+      if (g.includes('datos abiertos') || g.includes('docentes')) return 'bg-purple-50 text-purple-800 border-purple-200';
+      if (g.includes('vacuna') || g.includes('vacunas')) return 'bg-pink-50 text-pink-800 border-pink-200';
       return 'bg-gray-50 text-gray-700 border-gray-200';
     }
 
