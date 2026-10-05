@@ -10,6 +10,8 @@ try:
 except ImportError:
     gpd = None
 
+from socio_catalog import SOCIO_CATALOG, SOCIO_INVENTORY
+
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = Path(os.getenv("DASHBOARD_DB", BASE_DIR / "dashboard_data_completo.db"))
 DB_GZ_PATH = BASE_DIR / "dashboard_data_completo.db.gz"
@@ -273,6 +275,7 @@ CATALOG = {
         ],
     },
 }
+CATALOG.update(SOCIO_CATALOG)
 
 # Auto-build full inventory from CATALOG and specific definitions
 def build_inventory():
@@ -473,6 +476,9 @@ def build_inventory():
             "fuente": "Oxford / Malaria Atlas Project",
             "unidad": "Minutos",
         })
+
+    # 10. Sociodemográfico / Censo Kaori
+    inv.extend(SOCIO_INVENTORY)
 
     return inv
 
@@ -768,6 +774,13 @@ def get_data():
             selected_cols = all_year_cols
         cols = ["ubigeo", "nombre"] + selected_cols
         result = jsonify({"columns": cols, "rows": df[cols].fillna(0).to_dict(orient="records")})
+    elif base in SOCIO_CATALOG:
+        df = pd.read_sql_query(
+            f"SELECT ubigeo, {indicador} AS valor FROM dim_sociodemografico WHERE nivel_geo = ?",
+            conn, params=(nivel,),
+        )
+        df = with_names(df, conn, nivel=nivel).rename(columns={"valor": indicador.upper()}).fillna(0)
+        result = jsonify({"columns": list(df.columns), "rows": df.to_dict(orient="records")})
     else:
         column = indicador
         if column not in {"primary_hcf", "secondary_hcf", "tertiary_hcf"}:
