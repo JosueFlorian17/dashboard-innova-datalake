@@ -546,13 +546,15 @@
 
     // Selected indicators in Data Tab (Set of "baseKey:indId")
     let selectedMultiIndicators = new Set();
+    // Track open accordions (all start collapsed by default)
+    let openAccordions = new Set();
 
     // Dual Range Slider Limits
     let sliderBounds = {
       'slider-data': { min: 2000, max: 2025 },
-      'slider-uni': { min: 2000, max: 2024 },
-      'slider-biv1': { min: 2000, max: 2024 },
-      'slider-biv2': { min: 2000, max: 2024 }
+      'slider-uni': { min: 2000, max: 2025 },
+      'slider-biv1': { min: 2000, max: 2025 },
+      'slider-biv2': { min: 2000, max: 2025 }
     };
 
     // Bivariate State
@@ -713,26 +715,32 @@
 
         const baseCheckedCount = matchingIndicators.filter(ind => selectedMultiIndicators.has(`${baseKey}:${ind.id}`)).length;
         const allBaseChecked = baseCheckedCount === matchingIndicators.length;
+        const isOpen = openAccordions.has(baseKey) || (query !== '');
 
         const groupDiv = document.createElement('div');
         groupDiv.className = 'border border-gray-200 rounded bg-white overflow-hidden shadow-2xs';
 
         // Base Header
         const headerDiv = document.createElement('div');
-        headerDiv.className = 'px-2.5 py-1.5 bg-gray-50 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition border-b border-gray-100';
+        headerDiv.className = 'px-2.5 py-1.5 bg-gray-50 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition border-b border-gray-100 select-none';
+        headerDiv.onclick = (e) => {
+          if (e.target.tagName === 'INPUT') return;
+          toggleAccordion(baseKey);
+        };
         headerDiv.innerHTML = `
           <div class="flex items-center space-x-1.5 flex-1 truncate">
+            <span id="icon-acc-${baseKey}" class="text-[10px] text-gray-500 font-bold">${isOpen ? '▾' : '▸'}</span>
             <input type="checkbox" id="multi-base-${baseKey}" ${allBaseChecked ? 'checked' : ''} onclick="event.stopPropagation(); toggleBaseAll('${baseKey}', this.checked)" class="rounded text-emerald-700 focus:ring-emerald-600 h-3.5 w-3.5 cursor-pointer">
-            <span class="font-bold text-[11px] text-gray-800 truncate" onclick="toggleAccordion('acc-${baseKey}')">${base.label}</span>
+            <span class="font-bold text-[11px] text-gray-800 truncate">${base.label}</span>
           </div>
           <span class="text-[9px] font-bold text-gray-500 bg-gray-200/80 px-1.5 py-0.2 rounded">${baseCheckedCount}/${matchingIndicators.length}</span>
         `;
         groupDiv.appendChild(headerDiv);
 
-        // Indicator Checkboxes Container
+        // Indicator Checkboxes Container (collapsed by default unless open or searching)
         const listDiv = document.createElement('div');
         listDiv.id = `acc-${baseKey}`;
-        listDiv.className = 'p-1.5 space-y-1';
+        listDiv.className = `p-1.5 space-y-1 ${isOpen ? '' : 'hidden'}`;
 
         matchingIndicators.forEach(ind => {
           const key = `${baseKey}:${ind.id}`;
@@ -757,9 +765,23 @@
       updateMultiCountBadge();
     }
 
-    function toggleAccordion(id) {
-      const el = document.getElementById(id);
-      if (el) el.classList.toggle('hidden');
+    function toggleAccordion(baseKey) {
+      if (openAccordions.has(baseKey)) {
+        openAccordions.delete(baseKey);
+      } else {
+        openAccordions.add(baseKey);
+      }
+      const el = document.getElementById(`acc-${baseKey}`);
+      const icon = document.getElementById(`icon-acc-${baseKey}`);
+      if (el) {
+        if (openAccordions.has(baseKey)) {
+          el.classList.remove('hidden');
+          if (icon) icon.textContent = '▾';
+        } else {
+          el.classList.add('hidden');
+          if (icon) icon.textContent = '▸';
+        }
+      }
     }
 
     function onMultiIndicatorToggled(key, isChecked) {
@@ -1805,7 +1827,7 @@
       selectedMultiIndicators.add('clima:clima_pm25');
       selectedMultiIndicators.add('salud_vectores:dengue_total');
 
-      setupDualSlider('slider-data', 2000, 2025, 2020, 2024);
+      setupDualSlider('slider-data', 2000, 2025, 2000, 2025);
       populateBivSelects();
       onNivelChanged();
       cargarInventario();
