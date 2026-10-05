@@ -62,10 +62,20 @@ CATALOG = {
     "salud_vectores": {
         "label": "Salud - Vectores (Dengue / Malaria)",
         "niveles": ["departamento", "provincia", "distrito"],
-        "tiene_anios": False,
+        "tiene_anios": True,
+        "min_anio": 2000,
+        "max_anio": 2024,
         "indicadores": [
-            {"id": "dengue_total", "label": "Dengue - Casos Acumulados"},
-            {"id": "malaria_total", "label": "Malaria - Casos Acumulados"},
+            {"id": "dengue_total", "label": "Dengue - Casos Totales"},
+            {"id": "dengue_f", "label": "Dengue - Mujeres (F)"},
+            {"id": "dengue_m", "label": "Dengue - Hombres (M)"},
+            {"id": "dengue_0_19", "label": "Dengue - Edad 0 a 19 años"},
+            {"id": "dengue_mayor_20", "label": "Dengue - Edad >20 años"},
+            {"id": "malaria_total", "label": "Malaria - Casos Totales"},
+            {"id": "malaria_falciparum", "label": "Malaria - Falciparum (PF)"},
+            {"id": "malaria_vivax", "label": "Malaria - Vivax (PV)"},
+            {"id": "malaria_f", "label": "Malaria - Mujeres (F)"},
+            {"id": "malaria_m", "label": "Malaria - Hombres (M)"},
         ],
     },
     "censo": {
@@ -260,9 +270,57 @@ INVENTORY = [
         "base_key": "salud_vectores",
         "indicador_id": "dengue_total",
         "grupo": "Salud",
-        "indicador": "Casos de Dengue Acumulados",
-        "descripcion": "Total de casos de dengue notificados.",
-        "resolucion_temporal": "2000 - 2025 (Acumulado)",
+        "indicador": "Casos de Dengue - Total Anual",
+        "descripcion": "Total de casos notificados de dengue en el año YYYY (con desglose mensual disponible).",
+        "resolucion_temporal": "2000 - 2024 (Anual y Mensual)",
+        "resolucion_espacial": ["Departamento", "Provincia", "Distrito"],
+        "fuente": "CDC Perú / MINSA",
+        "unidad": "Casos Notificados",
+    },
+    {
+        "id": "DENGUE_YYYY_F",
+        "base_key": "salud_vectores",
+        "indicador_id": "dengue_f",
+        "grupo": "Salud",
+        "indicador": "Casos de Dengue - Mujeres (F)",
+        "descripcion": "Total de casos notificados de dengue en mujeres en el año YYYY.",
+        "resolucion_temporal": "2000 - 2024 (Anual y Mensual)",
+        "resolucion_espacial": ["Departamento", "Provincia", "Distrito"],
+        "fuente": "CDC Perú / MINSA",
+        "unidad": "Casos Notificados",
+    },
+    {
+        "id": "DENGUE_YYYY_M",
+        "base_key": "salud_vectores",
+        "indicador_id": "dengue_m",
+        "grupo": "Salud",
+        "indicador": "Casos de Dengue - Hombres (M)",
+        "descripcion": "Total de casos notificados de dengue en hombres en el año YYYY.",
+        "resolucion_temporal": "2000 - 2024 (Anual y Mensual)",
+        "resolucion_espacial": ["Departamento", "Provincia", "Distrito"],
+        "fuente": "CDC Perú / MINSA",
+        "unidad": "Casos Notificados",
+    },
+    {
+        "id": "DENGUE_YYYY_0_19",
+        "base_key": "salud_vectores",
+        "indicador_id": "dengue_0_19",
+        "grupo": "Salud",
+        "indicador": "Casos de Dengue - Edad 0 a 19 años",
+        "descripcion": "Total de casos notificados de dengue en población de 0 a 19 años en el año YYYY.",
+        "resolucion_temporal": "2000 - 2024 (Anual y Mensual)",
+        "resolucion_espacial": ["Departamento", "Provincia", "Distrito"],
+        "fuente": "CDC Perú / MINSA",
+        "unidad": "Casos Notificados",
+    },
+    {
+        "id": "DENGUE_YYYY_>20",
+        "base_key": "salud_vectores",
+        "indicador_id": "dengue_mayor_20",
+        "grupo": "Salud",
+        "indicador": "Casos de Dengue - Edad >20 años",
+        "descripcion": "Total de casos notificados de dengue en población mayor de 20 años en el año YYYY.",
+        "resolucion_temporal": "2000 - 2024 (Anual y Mensual)",
         "resolucion_espacial": ["Departamento", "Provincia", "Distrito"],
         "fuente": "CDC Perú / MINSA",
         "unidad": "Casos Notificados",
@@ -272,9 +330,57 @@ INVENTORY = [
         "base_key": "salud_vectores",
         "indicador_id": "malaria_total",
         "grupo": "Salud",
-        "indicador": "Casos de Malaria Acumulados",
-        "descripcion": "Total de casos de malaria notificados.",
-        "resolucion_temporal": "2000 - 2024 (Acumulado)",
+        "indicador": "Casos de Malaria - Total Anual",
+        "descripcion": "Total de casos notificados de malaria en el año YYYY (con desglose mensual disponible).",
+        "resolucion_temporal": "2000 - 2023 (Anual y Mensual)",
+        "resolucion_espacial": ["Departamento", "Provincia", "Distrito"],
+        "fuente": "CDC Perú / MINSA",
+        "unidad": "Casos Notificados",
+    },
+    {
+        "id": "MALARIA_PF_YYYY",
+        "base_key": "salud_vectores",
+        "indicador_id": "malaria_falciparum",
+        "grupo": "Salud",
+        "indicador": "Casos de Malaria - P. Falciparum (PF)",
+        "descripcion": "Total de casos notificados de malaria por Plasmodium Falciparum en el año YYYY.",
+        "resolucion_temporal": "2000 - 2023 (Anual y Mensual)",
+        "resolucion_espacial": ["Departamento", "Provincia", "Distrito"],
+        "fuente": "CDC Perú / MINSA",
+        "unidad": "Casos Notificados",
+    },
+    {
+        "id": "MALARIA_PV_YYYY",
+        "base_key": "salud_vectores",
+        "indicador_id": "malaria_vivax",
+        "grupo": "Salud",
+        "indicador": "Casos de Malaria - P. Vivax (PV)",
+        "descripcion": "Total de casos notificados de malaria por Plasmodium Vivax en el año YYYY.",
+        "resolucion_temporal": "2000 - 2023 (Anual y Mensual)",
+        "resolucion_espacial": ["Departamento", "Provincia", "Distrito"],
+        "fuente": "CDC Perú / MINSA",
+        "unidad": "Casos Notificados",
+    },
+    {
+        "id": "MALARIA_YYYY_F",
+        "base_key": "salud_vectores",
+        "indicador_id": "malaria_f",
+        "grupo": "Salud",
+        "indicador": "Casos de Malaria - Mujeres (F)",
+        "descripcion": "Total de casos notificados de malaria en mujeres en el año YYYY.",
+        "resolucion_temporal": "2000 - 2023 (Anual y Mensual)",
+        "resolucion_espacial": ["Departamento", "Provincia", "Distrito"],
+        "fuente": "CDC Perú / MINSA",
+        "unidad": "Casos Notificados",
+    },
+    {
+        "id": "MALARIA_YYYY_M",
+        "base_key": "salud_vectores",
+        "indicador_id": "malaria_m",
+        "grupo": "Salud",
+        "indicador": "Casos de Malaria - Hombres (M)",
+        "descripcion": "Total de casos notificados de malaria en hombres en el año YYYY.",
+        "resolucion_temporal": "2000 - 2023 (Anual y Mensual)",
         "resolucion_espacial": ["Departamento", "Provincia", "Distrito"],
         "fuente": "CDC Perú / MINSA",
         "unidad": "Casos Notificados",
@@ -998,13 +1104,35 @@ def get_data():
         )
         result = temporal_response(df, prefix, conn)
     elif base == "salud_vectores":
-        disease = "DENGUE" if indicador == "dengue_total" else "MALARIA"
+        mes = request.args.get("mes", "Total")
+        if indicador == "dengue_total":
+            disease, sexo, edad, prefix = "DENGUE", "Total", "Total", "DENGUE_"
+        elif indicador == "dengue_f":
+            disease, sexo, edad, prefix = "DENGUE", "F", "Total", "DENGUE_F_"
+        elif indicador == "dengue_m":
+            disease, sexo, edad, prefix = "DENGUE", "M", "Total", "DENGUE_M_"
+        elif indicador == "dengue_0_19":
+            disease, sexo, edad, prefix = "DENGUE", "Total", "0-19", "DENGUE_0_19_"
+        elif indicador == "dengue_mayor_20":
+            disease, sexo, edad, prefix = "DENGUE", "Total", ">20", "DENGUE_MAYOR_20_"
+        elif indicador == "malaria_total":
+            disease, sexo, edad, prefix = "MALARIA", "Total", "Total", "MALARIA_"
+        elif indicador == "malaria_falciparum":
+            disease, sexo, edad, prefix = "MALARIA_PF", "Total", "Total", "MALARIA_PF_"
+        elif indicador == "malaria_vivax":
+            disease, sexo, edad, prefix = "MALARIA_PV", "Total", "Total", "MALARIA_PV_"
+        elif indicador == "malaria_f":
+            disease, sexo, edad, prefix = "MALARIA", "F", "Total", "MALARIA_F_"
+        elif indicador == "malaria_m":
+            disease, sexo, edad, prefix = "MALARIA", "M", "Total", "MALARIA_M_"
+        else:
+            disease, sexo, edad, prefix = "DENGUE", "Total", "Total", "DENGUE_"
+            
         df = pd.read_sql_query(
-            "SELECT ubigeo, SUM(casos) AS valor FROM fact_disease WHERE nivel_geo = ? AND enfermedad = ? GROUP BY ubigeo",
-            conn, params=(nivel, disease),
+            "SELECT ubigeo, anio, casos AS valor FROM fact_disease WHERE nivel_geo = ? AND enfermedad = ? AND mes = ? AND sexo = ? AND grupo_edad = ? AND anio BETWEEN ? AND ?",
+            conn, params=(nivel, disease, mes, sexo, edad, anio_min, anio_max),
         )
-        df = with_names(df, conn).rename(columns={"valor": f"CASOS_{disease}_TOTAL"}).fillna("")
-        result = jsonify({"columns": list(df.columns), "rows": df.to_dict(orient="records")})
+        result = temporal_response(df, prefix, conn)
     elif base == "censo":
         df = pd.read_sql_query(
             "SELECT ubigeo, valor FROM fact_census WHERE nivel_geo = ? AND variable = ?",
