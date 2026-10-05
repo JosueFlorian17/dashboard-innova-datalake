@@ -12,4 +12,6 @@ health_complete/
 mortality/
 others/
 projected_population/
+*.db
 *.db-journal
+!*.db.gz

@@ -1001,7 +1001,22 @@ INVENTORY = [
     },
 ]
 
+DB_GZ_PATH = BASE_DIR / "dashboard_data_completo.db.gz"
+
+def ensure_sqlite_ready():
+    if DB_GZ_PATH.exists():
+        if not DB_PATH.exists() or DB_PATH.stat().st_size < 1_000_000:
+            print("Extrayendo base de datos optimizada desde dashboard_data_completo.db.gz...")
+            import gzip
+            import shutil
+            with gzip.open(DB_GZ_PATH, 'rb') as f_in, open(DB_PATH, 'wb') as f_out:
+                shutil.copyfileobj(f_in, f_out)
+            print("Base de datos extraida exitosamente.")
+
+ensure_sqlite_ready()
+
 def get_db():
+    ensure_sqlite_ready()
     if not DB_PATH.exists():
         raise FileNotFoundError(f"No existe la base de datos: {DB_PATH}")
     conn = sqlite3.connect(DB_PATH)
@@ -1014,49 +1029,68 @@ def parse_year(value, default):
     except (TypeError, ValueError):
         return default
 
-def with_names(df, conn):
+def with_names(df, conn, nivel=None):
+    if nivel:
+        names = pd.read_sql_query(
+            "SELECT ubigeo, nombre FROM dim_geografia WHERE nivel_geo = ?",
+            conn, params=(nivel,)
+        )
+    else:
+        names = pd.read_sql_query(
+            "SELECT ubigeo, nombre FROM dim_geografia",
+            conn,
+        )
     if df.empty or "ubigeo" not in df.columns:
-        return df
-    names = pd.read_sql_query(
-        "SELECT ubigeo, nombre FROM dim_geografia",
-        conn,
-    )
-    return df.merge(names, on="ubigeo", how="left")
+        return names
+    return names.merge(df, on="ubigeo", how="left")
 
-def temporal_response(df, prefix, conn):
+def temporal_response(df, prefix, conn, nivel=None):
+    if nivel:
+        names = pd.read_sql_query("SELECT ubigeo, nombre FROM dim_geografia WHERE nivel_geo = ?", conn, params=(nivel,))
+    else:
+        names = pd.read_sql_query("SELECT ubigeo, nombre FROM dim_geografia", conn)
+    
     if df.empty:
-        return jsonify({"columns": ["ubigeo", "nombre"], "rows": []})
-    df = with_names(df, conn)
+        return jsonify({"columns": ["ubigeo", "nombre"], "rows": names.to_dict(orient="records")})
+    
+    df = df.merge(names, on="ubigeo", how="left")
     df = df.pivot_table(
         index=["ubigeo", "nombre"],
         columns="anio",
         values="valor",
         aggfunc="mean",
     ).reset_index()
-    df.columns = [f"{prefix}{column}" if isinstance(column, int) else column for column in df.columns]
-    df = df.fillna("")
-    return jsonify({"columns": list(df.columns), "rows": df.to_dict(orient="records")})
+    full = names.merge(df, on=["ubigeo", "nombre"], how="left")
+    full.columns = [f"{prefix}{column}" if isinstance(column, int) else column for column in full.columns]
+    full = full.fillna("")
+    return jsonify({"columns": list(full.columns), "rows": full.to_dict(orient="records")})
 
-def temporal_monthly_response(df, prefix, conn, anio_min, anio_max):
+def temporal_monthly_response(df, prefix, conn, anio_min, anio_max, nivel=None):
+    if nivel:
+        names = pd.read_sql_query("SELECT ubigeo, nombre FROM dim_geografia WHERE nivel_geo = ?", conn, params=(nivel,))
+    else:
+        names = pd.read_sql_query("SELECT ubigeo, nombre FROM dim_geografia", conn)
+        
     if df.empty:
-        return jsonify({"columns": ["ubigeo", "nombre"], "rows": []})
-    df = with_names(df, conn)
+        return jsonify({"columns": ["ubigeo", "nombre"], "rows": names.to_dict(orient="records")})
+        
+    df = df.merge(names, on="ubigeo", how="left")
     df["periodo"] = df.apply(lambda r: str(r["anio"]) if str(r["mes"]) == "Total" else f"{r['anio']}_{r['mes']}", axis=1)
     piv = df.pivot_table(index=["ubigeo", "nombre"], columns="periodo", values="valor", aggfunc="sum").reset_index()
     
+    full = names.merge(piv, on=["ubigeo", "nombre"], how="left")
+    
     ordered_cols = ["ubigeo", "nombre"]
     for y in range(anio_min, anio_max + 1):
-        if str(y) in piv.columns:
-            ordered_cols.append(str(y))
+        ordered_cols.append(str(y))
         for m in range(1, 13):
-            col_m = f"{y}_{m:02d}"
-            if col_m in piv.columns:
-                ordered_cols.append(col_m)
+            ordered_cols.append(f"{y}_{m:02d}")
                 
-    piv = piv[[c for c in ordered_cols if c in piv.columns]]
-    piv.columns = [f"{prefix}{c}" if c not in ("ubigeo", "nombre") else c for c in piv.columns]
-    piv = piv.fillna("")
-    return jsonify({"columns": list(piv.columns), "rows": piv.to_dict(orient="records")})
+    available_cols = [c for c in ordered_cols if c in full.columns]
+    full = full[available_cols]
+    full.columns = [f"{prefix}{c}" if c not in ("ubigeo", "nombre") else c for c in full.columns]
+    full = full.fillna(0)
+    return jsonify({"columns": list(full.columns), "rows": full.to_dict(orient="records")})
 
 @app.route("/")
 def home():
@@ -1105,7 +1139,7 @@ def get_data():
             "SELECT ubigeo, anio, mes, defunciones AS valor FROM fact_mortality WHERE nivel_geo = ? AND sexo = ? AND anio BETWEEN ? AND ?",
             conn, params=(nivel, sexo, anio_min, anio_max),
         )
-        result = temporal_monthly_response(df, "DEATHS_", conn, anio_min, anio_max)
+        result = temporal_monthly_response(df, "DEATHS_", conn, anio_min, anio_max, nivel=nivel)
     elif base == "poblacion":
         sexo = "F" if indicador == "poblacion_f" else "M" if indicador == "poblacion_m" else "Total"
         grupo = "0-50" if indicador == "poblacion_0_50" else ">50" if indicador == "poblacion_mayor_50" else "Total"
@@ -1113,7 +1147,7 @@ def get_data():
             "SELECT ubigeo, anio, poblacion AS valor FROM fact_population WHERE nivel_geo = ? AND sexo = ? AND grupo_edad = ? AND anio BETWEEN ? AND ?",
             conn, params=(nivel, sexo, grupo, anio_min, anio_max),
         )
-        result = temporal_response(df, "POP_", conn)
+        result = temporal_response(df, "POP_", conn, nivel=nivel)
     elif base == "clima":
         variable, prefix = {
             "clima_pm25": ("PM2_5", "PM25_"),
@@ -1125,7 +1159,7 @@ def get_data():
             "SELECT ubigeo, anio, valor FROM fact_climate WHERE nivel_geo = ? AND variable = ? AND anio BETWEEN ? AND ?",
             conn, params=(nivel, variable, anio_min, anio_max),
         )
-        result = temporal_response(df, prefix, conn)
+        result = temporal_response(df, prefix, conn, nivel=nivel)
     elif base == "salud_vectores":
         if indicador == "dengue_total":
             disease, sexo, edad, prefix = "DENGUE", "Total", "Total", "DENGUE_"
@@ -1154,13 +1188,13 @@ def get_data():
             "SELECT ubigeo, anio, mes, casos AS valor FROM fact_disease WHERE nivel_geo = ? AND enfermedad = ? AND sexo = ? AND grupo_edad = ? AND anio BETWEEN ? AND ?",
             conn, params=(nivel, disease, sexo, edad, anio_min, anio_max),
         )
-        result = temporal_monthly_response(df, prefix, conn, anio_min, anio_max)
+        result = temporal_monthly_response(df, prefix, conn, anio_min, anio_max, nivel=nivel)
     elif base == "censo":
         df = pd.read_sql_query(
             "SELECT ubigeo, valor FROM fact_census WHERE nivel_geo = ? AND variable = ?",
             conn, params=(nivel, indicador),
         )
-        df = with_names(df, conn).rename(columns={"valor": indicador}).fillna("")
+        df = with_names(df, conn, nivel=nivel).rename(columns={"valor": indicador}).fillna("")
         result = jsonify({"columns": list(df.columns), "rows": df.to_dict(orient="records")})
     elif base == "endes":
         parts = indicador.split("_")
@@ -1170,7 +1204,7 @@ def get_data():
             "SELECT ubigeo, anio, proporcion * 100 AS valor FROM fact_endes_vacuna WHERE vacuna = ? AND dosis = ? AND respuesta = 'Yes' AND anio BETWEEN ? AND ?",
             conn, params=(vaccine, dose, anio_min, anio_max),
         )
-        result = temporal_response(df, f"VAC_{vaccine}_{dose}_", conn)
+        result = temporal_response(df, f"VAC_{vaccine}_{dose}_", conn, nivel=nivel)
     elif base == "endes_vivienda":
         col_map = {
             "pared_noble": "EXTERIOR_WALL_MATERIAL_EXTERIOR_WALL_WELL_CONSTRUCTED_P_2023",
