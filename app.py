@@ -73,11 +73,26 @@ CATALOG = {
         "niveles": ["departamento", "provincia", "distrito"],
         "tiene_anios": False,
         "indicadores": [
-            {"id": "UNEMPLOYMENT_RATE", "label": "Tasa de Desempleo (%)"},
+            {"id": "UNEMPLOYMENT_RATE", "label": "Tasa de Desempleo Total (%)"},
+            {"id": "UNEMPLOYMENT_RATE_F", "label": "Tasa de Desempleo - Mujeres (%)"},
+            {"id": "UNEMPLOYMENT_RATE_M", "label": "Tasa de Desempleo - Hombres (%)"},
+            {"id": "UNEMPLOYMENT_RATIO_F_TO_M", "label": "Ratio Desempleo Mujer/Hombre"},
+            {"id": "LABOR_FORCE_PARTICIPATION", "label": "Participación en Fuerza Laboral Total (%)"},
+            {"id": "LABOR_FORCE_PARTICIPATION_F", "label": "Participación Laboral - Mujeres (%)"},
+            {"id": "LABOR_FORCE_PARTICIPATION_M", "label": "Participación Laboral - Hombres (%)"},
+            {"id": "FEMALE_LABOR_FORCE_RATIO", "label": "Proporción de Mujeres en Fuerza Laboral (%)"},
+            {"id": "NO_EDUCATION_NOR_EMPLOYMENT", "label": "Población NINI (No estudia ni trabaja) (%)"},
+            {"id": "NO_EDUCATION_NOR_EMPLOYMENT_F", "label": "Población NINI - Mujeres (%)"},
+            {"id": "NO_EDUCATION_NOR_EMPLOYMENT_M", "label": "Población NINI - Hombres (%)"},
+            {"id": "SCHOOL_ATTENDANCE_15_17", "label": "Asistencia Escolar 15-17 años Total (%)"},
+            {"id": "SCHOOL_ATTENDANCE_15_17_F", "label": "Asistencia Escolar 15-17 - Mujeres (%)"},
+            {"id": "SCHOOL_ATTENDANCE_15_17_M", "label": "Asistencia Escolar 15-17 - Hombres (%)"},
             {"id": "EDUCATION_PRIMARY_COMPLETED", "label": "Primaria Completa (%)"},
             {"id": "EDUCATION_SECONDARY_COMPLETED", "label": "Secundaria Completa (%)"},
             {"id": "EDUCATION_UNIVERSITY_COMPLETED", "label": "Superior Universitaria Completa (%)"},
             {"id": "EDUCATION_SECONDARY_RATIO_F_TO_M_COMPLETED", "label": "Ratio Educativo Mujer/Hombre"},
+            {"id": "POP_CENSADA_REDATAM", "label": "Población Censada (Redatam)"},
+            {"id": "POP_TOTAL_REDATAM", "label": "Población Total Estimada (Redatam)"},
         ],
     },
     "endes": {
@@ -87,10 +102,45 @@ CATALOG = {
         "min_anio": 2020,
         "max_anio": 2023,
         "indicadores": [
-            {"id": "vac_influenza_p", "label": "Vacuna Influenza (Proporción %)"},
-            {"id": "vac_rotavirus_p", "label": "Vacuna Rotavirus (Proporción %)"},
-            {"id": "vac_neumococo_p", "label": "Vacuna Neumococo (Proporción %)"},
-            {"id": "vac_pentavalente_p", "label": "Vacuna Pentavalente (Proporción %)"},
+            {"id": "vac_influenza_p", "label": "Vacuna Influenza (1ª Dosis %)"},
+            {"id": "vac_influenza_2d_p", "label": "Vacuna Influenza (2ª Dosis %)"},
+            {"id": "vac_rotavirus_p", "label": "Vacuna Rotavirus (1ª Dosis %)"},
+            {"id": "vac_rotavirus_2d_p", "label": "Vacuna Rotavirus (2ª Dosis %)"},
+            {"id": "vac_neumococo_p", "label": "Vacuna Neumococo (1ª Dosis %)"},
+            {"id": "vac_neumococo_2d_p", "label": "Vacuna Neumococo (2ª Dosis %)"},
+            {"id": "vac_neumococo_3d_p", "label": "Vacuna Neumococo (3ª Dosis %)"},
+            {"id": "vac_pentavalente_p", "label": "Vacuna Pentavalente (1ª Dosis %)"},
+            {"id": "vac_pentavalente_2d_p", "label": "Vacuna Pentavalente (2ª Dosis %)"},
+            {"id": "vac_pentavalente_3d_p", "label": "Vacuna Pentavalente (3ª Dosis %)"},
+        ],
+    },
+    "endes_vivienda": {
+        "label": "ENDES - Vivienda y Saneamiento",
+        "niveles": ["departamento"],
+        "tiene_anios": False,
+        "indicadores": [
+            {"id": "pared_noble", "label": "Paredes de Material Noble (%)"},
+            {"id": "pared_rustica", "label": "Paredes de Material Rústico (%)"},
+            {"id": "pared_natural", "label": "Paredes de Material Natural (%)"},
+            {"id": "piso_acabado", "label": "Pisos Acabados (Cerámica/Cemento) (%)"},
+            {"id": "piso_tierra", "label": "Pisos de Tierra / Natural (%)"},
+            {"id": "piso_rustico", "label": "Pisos Rústicos (%)"},
+            {"id": "agua_red_publica", "label": "Conexión a Red Pública de Agua (%)"},
+            {"id": "agua_pozo", "label": "Abastecimiento por Pozo (%)"},
+            {"id": "agua_superficial", "label": "Agua de Río / Manantial (%)"},
+            {"id": "desague_alcantarillado", "label": "Conexión a Red de Alcantarillado (%)"},
+            {"id": "letrina_pozo", "label": "Letrina / Pozo Ciego (%)"},
+            {"id": "sin_servicio_higienico", "label": "Sin Servicio Higiénico (%)"},
+        ],
+    },
+    "endes_sifilis": {
+        "label": "ENDES - Sífilis en Gestantes",
+        "niveles": ["departamento"],
+        "tiene_anios": True,
+        "min_anio": 2010,
+        "max_anio": 2022,
+        "indicadores": [
+            {"id": "sifilis_gestantes", "label": "Casos de Sífilis en Gestantes (2010-2022)"},
         ],
     },
     "travel_time": {
@@ -1354,12 +1404,49 @@ def get_data():
         df = with_names(df, conn).rename(columns={"valor": indicador}).fillna("")
         result = jsonify({"columns": list(df.columns), "rows": df.to_dict(orient="records")})
     elif base == "endes":
-        vaccine = indicador.split("_")[1].upper()
+        parts = indicador.split("_")
+        vaccine = parts[1].upper()
+        dose = parts[2].upper() if len(parts) >= 3 and parts[2].upper() in ("1D", "2D", "3D") else "1D"
         df = pd.read_sql_query(
-            "SELECT ubigeo, anio, proporcion * 100 AS valor FROM fact_endes_vacuna WHERE vacuna = ? AND respuesta = 'Yes' AND anio BETWEEN ? AND ?",
-            conn, params=(vaccine, anio_min, anio_max),
+            "SELECT ubigeo, anio, proporcion * 100 AS valor FROM fact_endes_vacuna WHERE vacuna = ? AND dosis = ? AND respuesta = 'Yes' AND anio BETWEEN ? AND ?",
+            conn, params=(vaccine, dose, anio_min, anio_max),
         )
-        result = temporal_response(df, f"VAC_{vaccine}_", conn)
+        result = temporal_response(df, f"VAC_{vaccine}_{dose}_", conn)
+    elif base == "endes_vivienda":
+        col_map = {
+            "pared_noble": "EXTERIOR_WALL_MATERIAL_EXTERIOR_WALL_WELL_CONSTRUCTED_P_2023",
+            "pared_rustica": "EXTERIOR_WALL_MATERIAL_EXTERIOR_WALL_RUSTIC_P_2023",
+            "pared_natural": "EXTERIOR_WALL_MATERIAL_EXTERIOR_WALL_NATURAL_P_2023",
+            "piso_acabado": "FLOOR_MATERIAL_FINISHED_FLOOR_P_2023",
+            "piso_tierra": "FLOOR_MATERIAL_NATURAL_FLOOR_P_2023",
+            "piso_rustico": "FLOOR_MATERIAL_RUSTIC_FLORR_P_2023",
+            "agua_red_publica": "WATER_SOURCE_PUBLIC_WATER_NETWORK_P_2023",
+            "agua_pozo": "WATER_SOURCE_WELL_WATER_P_2023",
+            "agua_superficial": "WATER_SOURCE_SURFACE_WATER_P_2023",
+            "desague_alcantarillado": "SANITARY_FACILITY_TOILET_CONNECTED_TO_PUBLIC_SEWER_SYSTEM_P_2023",
+            "letrina_pozo": "SANITARY_FACILITY_PIT_LATRINE_P_2023",
+            "sin_servicio_higienico": "SANITARY_FACILITY_NO_SERVICE_SANITARY_FACILITY_P_2023",
+        }
+        col = col_map.get(indicador, "FLOOR_MATERIAL_FINISHED_FLOOR_P_2023")
+        df = pd.read_sql_query(f"SELECT ubigeo, {col} AS valor FROM dim_endes_vivienda", conn)
+        df = with_names(df, conn).rename(columns={"valor": indicador.upper()}).fillna("")
+        result = jsonify({"columns": list(df.columns), "rows": df.to_dict(orient="records")})
+    elif base == "endes_sifilis":
+        df = pd.read_sql_query("SELECT * FROM fact_endes_sifilis", conn)
+        df = with_names(df, conn)
+        all_year_cols = [c for c in df.columns if c.startswith("ENDES_SIFILIS_N_")]
+        selected_cols = []
+        for c in all_year_cols:
+            try:
+                y = int(c.split("_")[-1])
+                if anio_min <= y <= anio_max:
+                    selected_cols.append(c)
+            except ValueError:
+                selected_cols.append(c)
+        if not selected_cols:
+            selected_cols = all_year_cols
+        cols = ["ubigeo", "nombre"] + selected_cols
+        result = jsonify({"columns": cols, "rows": df[cols].fillna("").to_dict(orient="records")})
     else:
         column = indicador
         if column not in {"primary_hcf", "secondary_hcf", "tertiary_hcf"}:
