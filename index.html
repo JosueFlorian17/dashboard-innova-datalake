@@ -2,73 +2,159 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>InnovaLab - DataHub</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap">
+  
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <style>
-    body { font-family: 'Montserrat', sans-serif; margin: 0; background-color: #f8fafc; }
-    .navbar-inverse { background-color: #073B3A; color: #ffffff; }
-    .nav-tab.active { background-color: rgba(255, 255, 255, 0.18); border-bottom: 3px solid #20c997; }
-    .sidebar { background-color: #ffffff; border-right: 1px solid #e2e8f0; min-width: 330px; max-width: 330px; }
-    .map-layout { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 12px; height: 100%; min-height: 0; }
-    .map-panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; min-height: 0; overflow: hidden; }
-    .map-panel-title { padding: 12px 14px 8px; color: #073B3A; font-size: 12px; font-weight: 700; border-bottom: 1px solid #e2e8f0; }
-    #map { height: 100%; width: 100%; min-height: 420px; }
-    .map-canvas { position: relative; height: 100%; min-height: 420px; }
-    .map-status { position: absolute; top: 10px; left: 55px; z-index: 500; padding: 6px 9px; border-radius: 3px; color: #334155; background: rgba(255,255,255,.92); box-shadow: 0 1px 4px rgba(15,23,42,.15); font-size: 11px; }
-    .ranking-options { display: flex; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-size: 11px; }
-    .ranking-options label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
-    .ranking-table-wrap { height: calc(100% - 91px); overflow: auto; }
-    .ranking-table { width: 100%; border-collapse: collapse; font-size: 10px; }
-    .ranking-table th { position: sticky; top: 0; padding: 8px; color: #64748b; background: #f8fafc; text-align: left; }
-    .ranking-table td { padding: 7px 8px; border-top: 1px solid #f1f5f9; color: #475569; }
-    .ranking-table tr { cursor: pointer; transition: background-color 0.15s; }
-    .ranking-table tr:hover { background-color: #e6f7f1; }
-    .ranking-table td:last-child, .ranking-table th:last-child { text-align: right; }
-    @media (max-width: 900px) { .map-layout { grid-template-columns: minmax(0, 1fr); } .ranking-panel { height: 250px; } .ranking-table-wrap { height: 165px; } }
-    @media (max-width: 720px) { .map-layout { display: flex; flex-direction: column; overflow-y: auto; } .map-panel, .ranking-panel { flex: 0 0 auto; } .map-canvas { height: 55vh; } }
-    .table-container { height: calc(100vh - 120px); overflow: auto; }
-    
-    /* DUAL RANGE SLIDER WITH HEADER COLOR */
+    body {
+      background-color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .navbar-inverse {
+      background-color: #073B3A;
+      color: #ffffff;
+    }
+    .nav-tab {
+      color: rgba(255, 255, 255, 0.7);
+      border-bottom: 3px solid transparent;
+    }
+    .nav-tab:hover {
+      color: #ffffff;
+    }
+    .nav-tab.active {
+      color: #ffffff;
+      border-bottom-color: #00B4D8;
+    }
+    .sidebar {
+      background-color: #ffffff;
+      border-right: 1px solid #e2e8f0;
+      width: 330px;
+      min-width: 330px;
+    }
+    .table-container {
+      height: calc(100vh - 120px);
+      overflow: auto;
+      background: white;
+    }
+    .map-layout {
+      display: grid;
+      grid-template-columns: 1fr 310px;
+      gap: 12px;
+      height: calc(100vh - 80px);
+    }
+    .map-panel {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .map-canvas {
+      position: relative;
+      height: 100%;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+    .map-status {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255,255,255,0.95);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      color: #073B3A;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      z-index: 1000;
+    }
+    .ranking-panel {
+      padding: 12px;
+    }
+    .ranking-panel-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #073B3A;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 4px;
+    }
+    .ranking-options {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+    }
+    .ranking-table-wrap {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .ranking-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .ranking-table th, .ranking-table td {
+      padding: 5px 6px;
+      border-bottom: 1px solid #f1f5f9;
+      text-align: left;
+    }
+    .ranking-table th {
+      background: #f8fafc;
+      color: #475569;
+      font-weight: bold;
+      position: sticky;
+      top: 0;
+    }
+
+    /* DUAL RANGE SLIDER */
     .dual-slider-container {
       position: relative;
       width: 100%;
-      height: 26px;
-      display: flex;
-      align-items: center;
-      touch-action: none;
+      height: 24px;
     }
     .dual-slider-track {
       position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 4px;
       width: 100%;
-      height: 5px;
-      background-color: #e2e8f0;
-      border-radius: 3px;
+      background: #e2e8f0;
+      border-radius: 2px;
     }
     .dual-slider-highlight {
       position: absolute;
-      height: 5px;
-      background-color: #073B3A;
-      border-radius: 3px;
-      z-index: 1;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 4px;
+      background: #073B3A;
+      border-radius: 2px;
     }
     .dual-slider-input {
       position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
-      height: 5px;
-      background: none;
-      pointer-events: none;
-      appearance: none;
+      height: 24px;
       -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      pointer-events: none;
       margin: 0;
-      z-index: 3;
     }
     .dual-slider-input::-webkit-slider-thumb {
-      pointer-events: auto;
-      appearance: none;
       -webkit-appearance: none;
+      pointer-events: auto;
       width: 15px;
       height: 15px;
       border-radius: 50%;
@@ -138,15 +224,11 @@
       grid-template-columns: repeat(3, 26px);
       grid-template-rows: repeat(3, 26px);
       gap: 2px;
-      background: #e2e8f0;
-      padding: 2px;
-      border-radius: 2px;
-      width: 86px;
-      height: 86px;
     }
     .biv-cell {
       width: 26px;
       height: 26px;
+      border-radius: 2px;
       cursor: pointer;
       transition: transform 0.1s, outline 0.1s;
     }
@@ -198,142 +280,175 @@
   </header>
 
   <div class="flex flex-1 overflow-hidden">
-    <aside id="sidebar-main" class="sidebar p-5 flex flex-col justify-between overflow-y-auto">
-      <div class="space-y-4">
-        <h4 class="font-bold text-gray-800 text-xs border-b pb-2 uppercase tracking-wider">Filtros de consulta</h4>
+    <aside id="sidebar-main" class="sidebar p-4 flex flex-col justify-between overflow-y-auto">
+      <div class="space-y-3">
+        <h4 id="sidebar-title" class="font-bold text-gray-800 text-xs border-b pb-1.5 uppercase tracking-wider">Filtros de consulta</h4>
 
-        <!-- MODO DE CONSULTA (UNIVARIADO / BIVARIADO) -->
-        <div id="contenedor-modo-consulta">
-          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Modo de Consulta:</label>
-          <select id="map-mode-select" onchange="onMapModeChanged(this.value)" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs font-semibold focus:ring-1 focus:ring-emerald-700">
-            <option value="univariado">Univariado</option>
-            <option value="bivariado">Bivariado (Cruce de fuentes / indicadores)</option>
-          </select>
-        </div>
-
-        <!-- NIVEL GEOGRAFICO -->
+        <!-- NIVEL GEOGRAFICO (COMPARTIDO) -->
         <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Nivel Geografico:</label>
-          <select id="nivel-select" onchange="onNivelChanged()" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs focus:ring-1 focus:ring-emerald-700">
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Nivel Geográfico:</label>
+          <select id="nivel-select" onchange="onNivelChanged()" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs font-semibold focus:ring-1 focus:ring-emerald-700">
             <option value="departamento">Departamento</option>
             <option value="provincia">Provincia</option>
             <option value="distrito">Distrito</option>
           </select>
         </div>
 
-        <!-- FILTROS NORMALES (UNIVARIADO O DATA TAB) -->
-        <div id="seccion-filtros-univariado" class="space-y-3">
-          <!-- 1. SELECCION DE BASE DE DATOS -->
-          <div>
-            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">1. Seleccionar Base:</label>
-            <select id="base-select" onchange="onBaseChanged()" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs font-semibold text-emerald-900 bg-emerald-50 focus:ring-1 focus:ring-emerald-700">
-            </select>
-          </div>
-
-          <!-- 2. SELECCION DE INDICADOR -->
-          <div>
-            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">2. Indicador:</label>
-            <select id="indicador-select" onchange="cargarDatos()" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs focus:ring-1 focus:ring-emerald-700">
-            </select>
-          </div>
-
-          <!-- BOTON PARA INVERTIR ESCALA DE COLOR (SOLO VISIBLE EN TAB MAPA) -->
-          <div id="contenedor-invert-palette" class="hidden">
-            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Escala de Color:</label>
-            <button type="button" id="btn-invert-palette" onclick="toggleInvertPalette()" class="w-full border border-gray-300 hover:bg-gray-50 rounded px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition flex items-center justify-between">
-              <span>Invertir Colores</span>
-              <span id="label-invert-status" class="text-[9.5px] text-emerald-800 font-bold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Azul Alto / Rojo Bajo</span>
-            </button>
-          </div>
-
-          <!-- DUAL RANGE SLIDER UNIVARIADO -->
-          <div id="contenedor-anios" class="transition-all pt-1">
-            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Rango de Años:</label>
-            
-            <div class="dual-slider-container my-1" onpointerdown="onSliderContainerPointerDown(event, 'slider-uni')" onpointermove="onSliderContainerPointerMove(event, 'slider-uni')">
+        <!-- ==================== 1. PANEL MULTI-INDICADOR (SOLO PESTAÑA DATA) ==================== -->
+        <div id="seccion-filtros-data" class="space-y-3">
+          <!-- DUAL RANGE SLIDER DATA -->
+          <div id="contenedor-anios-data" class="pt-0.5">
+            <div class="flex justify-between items-center mb-1">
+              <label class="block text-xs font-bold text-gray-700 uppercase">Rango de Años:</label>
+              <span class="text-[10.5px] font-bold text-[#073B3A]"><span id="slider-data-min-val">2000</span> - <span id="slider-data-max-val">2025</span></span>
+            </div>
+            <div class="dual-slider-container my-1" onpointerdown="onSliderContainerPointerDown(event, 'slider-data')" onpointermove="onSliderContainerPointerMove(event, 'slider-data')">
               <div class="dual-slider-track"></div>
-              <div id="slider-uni-highlight" class="dual-slider-highlight"></div>
-              <input type="range" id="slider-uni-min" oninput="onDualSliderInput('slider-uni', 'min')" onchange="onDualSliderCommit('slider-uni')" class="dual-slider-input">
-              <input type="range" id="slider-uni-max" oninput="onDualSliderInput('slider-uni', 'max')" onchange="onDualSliderCommit('slider-uni')" class="dual-slider-input">
+              <div id="slider-data-highlight" class="dual-slider-highlight"></div>
+              <input type="range" id="slider-data-min" oninput="onDualSliderInput('slider-data', 'min')" onchange="onDualSliderCommit('slider-data')" class="dual-slider-input">
+              <input type="range" id="slider-data-max" oninput="onDualSliderInput('slider-data', 'max')" onchange="onDualSliderCommit('slider-data')" class="dual-slider-input">
+            </div>
+          </div>
+
+          <!-- SELECCION MULTIPLE DE INDICADORES CON CHECKBOXES -->
+          <div class="border-t border-gray-200 pt-2">
+            <div class="flex justify-between items-center mb-1.5">
+              <label class="text-xs font-bold text-gray-800 uppercase">Variables a Exportar / Ver:</label>
+              <span id="multi-count-badge" class="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">0 seleccionadas</span>
             </div>
 
-            <div class="flex justify-between items-center text-xs font-bold text-[#073B3A] px-1">
-              <span id="slider-uni-min-val">2000</span>
-              <span class="text-xs text-gray-400 font-normal">hasta</span>
-              <span id="slider-uni-max-val">2024</span>
+            <!-- BUSCADOR RAPIDO DE VARIABLES -->
+            <input type="text" id="multi-search" oninput="filtrarIndicadoresMulti()" placeholder="Buscar indicadores..." class="w-full bg-white border border-gray-300 rounded px-2.5 py-1 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-emerald-700 mb-2">
+
+            <!-- ACCIONES RAPIDAS -->
+            <div class="flex items-center space-x-1.5 mb-2">
+              <button type="button" onclick="marcarTodosMulti()" class="text-[10px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded transition">Marcar Todos</button>
+              <button type="button" onclick="desmarcarTodosMulti()" class="text-[10px] font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 px-2 py-0.5 rounded transition">Limpiar</button>
+            </div>
+
+            <!-- ARBOL DE BASES E INDICADORES -->
+            <div id="multi-indicators-list" class="space-y-1.5 max-h-[380px] overflow-y-auto pr-1 border border-gray-200 rounded p-1.5 bg-gray-50/50">
             </div>
           </div>
         </div>
 
-        <!-- FILTROS BIVARIADOS (CON DUAL SLIDERS PARA CADA VARIABLE) -->
-        <div id="seccion-filtros-bivariado" class="space-y-3 hidden">
-          <!-- VARIABLE 1 (X) -->
-          <div class="p-2.5 border border-gray-200 rounded bg-gray-50/50 space-y-2">
-            <label class="block text-[10px] font-bold text-[#8a2336] uppercase">Variable 1 (Horizontal):</label>
-            <select id="biv-base-1" onchange="onBivBase1Changed()" class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-white"></select>
-            <select id="biv-ind-1" onchange="cargarDatosBivariados()" class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-white"></select>
-            
-            <!-- DUAL SLIDER VAR 1 -->
-            <div id="biv-slider-box-1" class="hidden pt-1">
-              <div class="dual-slider-container" onpointerdown="onSliderContainerPointerDown(event, 'slider-biv1')" onpointermove="onSliderContainerPointerMove(event, 'slider-biv1')">
+        <!-- ==================== 2. PANEL MAPA (UNIVARIADO / BIVARIADO) ==================== -->
+        <div id="seccion-filtros-mapa" class="space-y-3 hidden">
+          <!-- MODO DE CONSULTA MAPA -->
+          <div>
+            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Modo de Mapa:</label>
+            <select id="map-mode-select" onchange="onMapModeChanged(this.value)" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs font-semibold focus:ring-1 focus:ring-emerald-700">
+              <option value="univariado">Univariado (1 Variable)</option>
+              <option value="bivariado">Bivariado (Cruce de 2 Variables)</option>
+            </select>
+          </div>
+
+          <!-- FILTROS MAPA UNIVARIADO -->
+          <div id="seccion-mapa-univariado" class="space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Base de Datos:</label>
+              <select id="base-select" onchange="onBaseChanged()" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs font-semibold text-emerald-900 bg-emerald-50 focus:ring-1 focus:ring-emerald-700"></select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Indicador:</label>
+              <select id="indicador-select" onchange="cargarDatosMapaUni()" class="w-full border border-gray-300 rounded px-3 py-1.5 text-xs focus:ring-1 focus:ring-emerald-700"></select>
+            </div>
+
+            <div id="contenedor-invert-palette">
+              <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Escala de Color:</label>
+              <button type="button" id="btn-invert-palette" onclick="toggleInvertPalette()" class="w-full border border-gray-300 hover:bg-gray-50 rounded px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition flex items-center justify-between">
+                <span>Invertir Colores</span>
+                <span id="label-invert-status" class="text-[9.5px] text-emerald-800 font-bold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Azul Alto / Rojo Bajo</span>
+              </button>
+            </div>
+
+            <div id="contenedor-anios-uni" class="pt-1">
+              <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Rango de Años:</label>
+              <div class="dual-slider-container my-1" onpointerdown="onSliderContainerPointerDown(event, 'slider-uni')" onpointermove="onSliderContainerPointerMove(event, 'slider-uni')">
                 <div class="dual-slider-track"></div>
-                <div id="slider-biv1-highlight" class="dual-slider-highlight"></div>
-                <input type="range" id="slider-biv1-min" oninput="onDualSliderInput('slider-biv1', 'min')" onchange="onDualSliderCommit('slider-biv1')" class="dual-slider-input">
-                <input type="range" id="slider-biv1-max" oninput="onDualSliderInput('slider-biv1', 'max')" onchange="onDualSliderCommit('slider-biv1')" class="dual-slider-input">
+                <div id="slider-uni-highlight" class="dual-slider-highlight"></div>
+                <input type="range" id="slider-uni-min" oninput="onDualSliderInput('slider-uni', 'min')" onchange="onDualSliderCommit('slider-uni')" class="dual-slider-input">
+                <input type="range" id="slider-uni-max" oninput="onDualSliderInput('slider-uni', 'max')" onchange="onDualSliderCommit('slider-uni')" class="dual-slider-input">
               </div>
-              <div class="flex justify-between items-center text-[10px] font-bold text-[#073B3A] px-1">
-                <span id="slider-biv1-min-val">2000</span>
-                <span class="text-[9px] text-gray-400 font-normal">hasta</span>
-                <span id="slider-biv1-max-val">2024</span>
+              <div class="flex justify-between items-center text-xs font-bold text-[#073B3A] px-1">
+                <span id="slider-uni-min-val">2000</span>
+                <span class="text-xs text-gray-400 font-normal">hasta</span>
+                <span id="slider-uni-max-val">2024</span>
               </div>
             </div>
           </div>
 
-          <!-- VARIABLE 2 (Y) -->
-          <div class="p-2.5 border border-gray-200 rounded bg-gray-50/50 space-y-2">
-            <label class="block text-[10px] font-bold text-[#33649f] uppercase">Variable 2 (Vertical):</label>
-            <select id="biv-base-2" onchange="onBivBase2Changed()" class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-white"></select>
-            <select id="biv-ind-2" onchange="cargarDatosBivariados()" class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-white"></select>
-            
-            <!-- DUAL SLIDER VAR 2 -->
-            <div id="biv-slider-box-2" class="hidden pt-1">
-              <div class="dual-slider-container" onpointerdown="onSliderContainerPointerDown(event, 'slider-biv2')" onpointermove="onSliderContainerPointerMove(event, 'slider-biv2')">
-                <div class="dual-slider-track"></div>
-                <div id="slider-biv2-highlight" class="dual-slider-highlight"></div>
-                <input type="range" id="slider-biv2-min" oninput="onDualSliderInput('slider-biv2', 'min')" onchange="onDualSliderCommit('slider-biv2')" class="dual-slider-input">
-                <input type="range" id="slider-biv2-max" oninput="onDualSliderInput('slider-biv2', 'max')" onchange="onDualSliderCommit('slider-biv2')" class="dual-slider-input">
+          <!-- FILTROS MAPA BIVARIADO -->
+          <div id="seccion-mapa-bivariado" class="space-y-3 hidden">
+            <!-- VARIABLE 1 (X) -->
+            <div class="p-2.5 border border-gray-200 rounded bg-gray-50/50 space-y-2">
+              <label class="block text-[10px] font-bold text-[#8a2336] uppercase">Variable 1 (Horizontal):</label>
+              <select id="biv-base-1" onchange="onBivBase1Changed()" class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-white"></select>
+              <select id="biv-ind-1" onchange="cargarDatosBivariados()" class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-white"></select>
+              
+              <div id="biv-slider-box-1" class="hidden pt-1">
+                <div class="dual-slider-container" onpointerdown="onSliderContainerPointerDown(event, 'slider-biv1')" onpointermove="onSliderContainerPointerMove(event, 'slider-biv1')">
+                  <div class="dual-slider-track"></div>
+                  <div id="slider-biv1-highlight" class="dual-slider-highlight"></div>
+                  <input type="range" id="slider-biv1-min" oninput="onDualSliderInput('slider-biv1', 'min')" onchange="onDualSliderCommit('slider-biv1')" class="dual-slider-input">
+                  <input type="range" id="slider-biv1-max" oninput="onDualSliderInput('slider-biv1', 'max')" onchange="onDualSliderCommit('slider-biv1')" class="dual-slider-input">
+                </div>
+                <div class="flex justify-between items-center text-[10px] font-bold text-[#073B3A] px-1">
+                  <span id="slider-biv1-min-val">2000</span>
+                  <span class="text-[9px] text-gray-400 font-normal">hasta</span>
+                  <span id="slider-biv1-max-val">2024</span>
+                </div>
               </div>
-              <div class="flex justify-between items-center text-[10px] font-bold text-[#073B3A] px-1">
-                <span id="slider-biv2-min-val">2000</span>
-                <span class="text-[9px] text-gray-400 font-normal">hasta</span>
-                <span id="slider-biv2-max-val">2024</span>
+            </div>
+
+            <!-- VARIABLE 2 (Y) -->
+            <div class="p-2.5 border border-gray-200 rounded bg-gray-50/50 space-y-2">
+              <label class="block text-[10px] font-bold text-[#33649f] uppercase">Variable 2 (Vertical):</label>
+              <select id="biv-base-2" onchange="onBivBase2Changed()" class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-white"></select>
+              <select id="biv-ind-2" onchange="cargarDatosBivariados()" class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-white"></select>
+              
+              <div id="biv-slider-box-2" class="hidden pt-1">
+                <div class="dual-slider-container" onpointerdown="onSliderContainerPointerDown(event, 'slider-biv2')" onpointermove="onSliderContainerPointerMove(event, 'slider-biv2')">
+                  <div class="dual-slider-track"></div>
+                  <div id="slider-biv2-highlight" class="dual-slider-highlight"></div>
+                  <input type="range" id="slider-biv2-min" oninput="onDualSliderInput('slider-biv2', 'min')" onchange="onDualSliderCommit('slider-biv2')" class="dual-slider-input">
+                  <input type="range" id="slider-biv2-max" oninput="onDualSliderInput('slider-biv2', 'max')" onchange="onDualSliderCommit('slider-biv2')" class="dual-slider-input">
+                </div>
+                <div class="flex justify-between items-center text-[10px] font-bold text-[#073B3A] px-1">
+                  <span id="slider-biv2-min-val">2000</span>
+                  <span class="text-[9px] text-gray-400 font-normal">hasta</span>
+                  <span id="slider-biv2-max-val">2024</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="pt-4 border-t border-gray-200 space-y-2">
-        <button onclick="descargarCSV()" class="w-full bg-[#073B3A] hover:bg-[#0c5c5b] text-white py-2 px-4 rounded text-xs font-semibold transition flex items-center justify-center space-x-2 shadow">
+      <div class="pt-3 border-t border-gray-200">
+        <button onclick="descargarCSV()" class="w-full bg-[#073B3A] hover:bg-[#0c5c5b] text-white py-2 px-3 rounded text-xs font-semibold transition flex items-center justify-center space-x-2 shadow">
           <span>Descargar CSV Completo</span>
         </button>
       </div>
     </aside>
 
     <main class="flex-1 bg-white p-4 overflow-hidden relative">
+      <!-- VISTA DATA (TABLA MULTIVARIABLE) -->
       <div id="vista-data" class="h-full flex flex-col">
         <div class="flex justify-between items-center mb-2">
-          <h3 class="font-bold text-gray-800 text-xs">Explorador de Tablas (SQLite Completo)</h3>
+          <h3 class="font-bold text-gray-800 text-xs">Explorador de Tablas (Multivariable Completo)</h3>
           <span id="contador-filas" class="text-xs text-gray-500 font-medium"></span>
         </div>
-        <div class="table-container border border-gray-200 rounded shadow-sm">
+        <div class="table-container border border-gray-200 rounded shadow-xs">
           <table class="min-w-full divide-y divide-gray-200 text-xs">
-            <thead class="bg-gray-100 sticky top-0" id="tabla-head"></thead>
+            <thead class="bg-gray-100 sticky top-0 z-10" id="tabla-head"></thead>
             <tbody class="divide-y divide-gray-100" id="tabla-body"></tbody>
           </table>
         </div>
       </div>
 
+      <!-- VISTA MAPA -->
       <div id="vista-mapa" class="h-full w-full hidden">
         <div class="map-layout">
           <section class="map-panel map-canvas">
@@ -359,7 +474,6 @@
               <label><input type="radio" name="ranking-mode" value="min" checked onchange="renderRanking()"> Min</label>
             </div>
             
-            <!-- SELECTOR DE VARIABLE BIVARIADA PARA RANKING -->
             <div id="biv-ranking-var-toggle" class="hidden my-2 flex bg-gray-100 p-0.5 rounded border border-gray-200 text-[10px] font-semibold">
               <button id="biv-rank-btn-1" type="button" onclick="setBivRankingVar(1)" class="flex-1 py-1 px-1 rounded bg-[#073B3A] text-white font-bold text-center truncate transition shadow-xs">Var 1</button>
               <button id="biv-rank-btn-2" type="button" onclick="setBivRankingVar(2)" class="flex-1 py-1 px-1 rounded text-gray-700 hover:bg-gray-200 text-center truncate transition">Var 2</button>
@@ -377,15 +491,12 @@
 
       <!-- VISTA INVENTARIO DE VARIABLES (DICCIONARIO DE DATOS) -->
       <div id="vista-inventario" class="h-full flex flex-col hidden space-y-2">
-        <!-- SEARCH & FILTER TOOLBAR -->
         <div class="flex flex-wrap items-center justify-between gap-2 pb-1">
           <div class="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
-            <!-- BUSCADOR -->
             <div class="relative flex-1 min-w-[220px]">
               <input type="text" id="inv-search-input" oninput="filtrarInventario()" placeholder="Buscar por indicador, descripción, grupo o fuente..." class="w-full bg-white border border-gray-300 rounded px-3 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-emerald-700">
             </div>
 
-            <!-- FILTRO POR GRUPO -->
             <select id="inv-filter-grupo" onchange="filtrarInventario()" class="bg-white border border-gray-300 rounded px-2.5 py-1.5 text-xs font-semibold text-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-700">
               <option value="">Todos los grupos</option>
             </select>
@@ -399,7 +510,6 @@
           </div>
         </div>
 
-        <!-- TABLA DEL INVENTARIO (ESTILO PLANO) -->
         <div class="table-container border border-gray-200 rounded shadow-xs flex-1">
           <table class="min-w-full divide-y divide-gray-200 text-xs">
             <thead class="bg-gray-100 sticky top-0 z-10">
@@ -434,8 +544,12 @@
     let currentUniMap = {};
     let currentUniLabel = '';
 
+    // Selected indicators in Data Tab (Set of "baseKey:indId")
+    let selectedMultiIndicators = new Set();
+
     // Dual Range Slider Limits
     let sliderBounds = {
+      'slider-data': { min: 2000, max: 2025 },
       'slider-uni': { min: 2000, max: 2024 },
       'slider-biv1': { min: 2000, max: 2024 },
       'slider-biv2': { min: 2000, max: 2024 }
@@ -450,11 +564,11 @@
     let currentBivLabel2 = 'Variable 2';
     let bivRankingVar = 1;
 
-    // Bivariate 3x3 Palette (Sampled directly from user's reference image)
+    // Bivariate 3x3 Palette
     const BIV_MATRIX_3x3 = [
-      ['#c9c9c9', '#ab737e', '#8a2336'], // Y=0 (Low Var 2: Grey -> Mauve -> Crimson)
-      ['#7895b5', '#655770', '#541d32'], // Y=1 (Med Var 2: Soft Blue -> Purple -> Wine)
-      ['#33649f', '#2d3c65', '#24152c']  // Y=2 (High Var 2: Steel Blue -> Dark Navy -> Deep Plum)
+      ['#c9c9c9', '#ab737e', '#8a2336'], // Y=0 (Low Var 2)
+      ['#7895b5', '#655770', '#541d32'], // Y=1 (Med Var 2)
+      ['#33649f', '#2d3c65', '#24152c']  // Y=2 (High Var 2)
     ];
 
     function cleanIndicatorName(name) {
@@ -462,248 +576,7 @@
       return name.replace(/\s*\(\d{4}[^\)]*\)/g, '').trim();
     }
 
-    function setBivRankingVar(varNum) {
-      bivRankingVar = varNum;
-      updateBivRankingButtons();
-      renderRankingBivariado();
-    }
-
-    function updateBivRankingButtons() {
-      const btn1 = document.getElementById('biv-rank-btn-1');
-      const btn2 = document.getElementById('biv-rank-btn-2');
-      if (!btn1 || !btn2) return;
-      
-      const lbl1 = currentBivLabel1 || 'Var 1';
-      const lbl2 = currentBivLabel2 || 'Var 2';
-      
-      btn1.textContent = lbl1;
-      btn1.title = lbl1;
-      btn2.textContent = lbl2;
-      btn2.title = lbl2;
-
-      if (bivRankingVar === 1) {
-        btn1.className = 'flex-1 py-1 px-1.5 rounded bg-[#073B3A] text-white font-bold text-center truncate transition shadow-xs';
-        btn2.className = 'flex-1 py-1 px-1.5 rounded text-gray-700 hover:bg-gray-200 text-center truncate transition';
-      } else {
-        btn2.className = 'flex-1 py-1 px-1.5 rounded bg-[#073B3A] text-white font-bold text-center truncate transition shadow-xs';
-        btn1.className = 'flex-1 py-1 px-1.5 rounded text-gray-700 hover:bg-gray-200 text-center truncate transition';
-      }
-    }
-
-    // --- INVENTARIO DE VARIABLES ---
-    let inventoryData = [];
-    let filteredInventory = [];
-
-    async function cargarInventario() {
-      if (!inventoryData.length) {
-        try {
-          const res = await fetch('/api/inventory');
-          inventoryData = await res.json();
-          poblarFiltrosInventario();
-        } catch (e) {
-          console.error("Error al cargar inventario:", e);
-        }
-      }
-      filtrarInventario();
-    }
-
-    function poblarFiltrosInventario() {
-      const selectGrupo = document.getElementById('inv-filter-grupo');
-      if (!selectGrupo) return;
-      
-      const grupos = [...new Set(inventoryData.map(item => item.grupo))].sort();
-      selectGrupo.innerHTML = '<option value="">Todos los grupos (' + inventoryData.length + ')</option>';
-      grupos.forEach(g => {
-        const count = inventoryData.filter(i => i.grupo === g).length;
-        const opt = document.createElement('option');
-        opt.value = g;
-        opt.textContent = `${g} (${count})`;
-        selectGrupo.appendChild(opt);
-      });
-
-      const statTotal = document.getElementById('inv-stat-total');
-      const statGrupos = document.getElementById('inv-stat-grupos');
-      if (statTotal) statTotal.textContent = inventoryData.length;
-      if (statGrupos) statGrupos.textContent = grupos.length;
-    }
-
-    function filtrarInventario() {
-      const query = (document.getElementById('inv-search-input')?.value || '').toLowerCase().trim();
-      const grupoSel = document.getElementById('inv-filter-grupo')?.value || '';
-
-      filteredInventory = inventoryData.filter(item => {
-        const matchQuery = !query || 
-          item.indicador.toLowerCase().includes(query) ||
-          item.descripcion.toLowerCase().includes(query) ||
-          item.grupo.toLowerCase().includes(query) ||
-          item.fuente.toLowerCase().includes(query) ||
-          item.id.toLowerCase().includes(query);
-
-        const matchGrupo = !grupoSel || item.grupo === grupoSel;
-
-        return matchQuery && matchGrupo;
-      });
-
-      renderizarInventario();
-    }
-
-    function getGroupBadgeClass(grupo) {
-      const g = (grupo || '').toLowerCase();
-      if (g.includes('población') || g.includes('poblacion')) return 'bg-blue-50 text-blue-800 border-blue-200';
-      if (g.includes('clima') || g.includes('ambiente')) return 'bg-teal-50 text-teal-800 border-teal-200';
-      if (g.includes('salud') || g.includes('mortalidad')) return 'bg-rose-50 text-rose-800 border-rose-200';
-      if (g.includes('endes')) return 'bg-amber-50 text-amber-800 border-amber-200';
-      if (g.includes('censo')) return 'bg-indigo-50 text-indigo-800 border-indigo-200';
-      if (g.includes('misceláneo') || g.includes('miscelaneo') || g.includes('viaje') || g.includes('pobreza')) return 'bg-emerald-50 text-emerald-800 border-emerald-200';
-      if (g.includes('datos abiertos') || g.includes('docentes')) return 'bg-purple-50 text-purple-800 border-purple-200';
-      if (g.includes('vacuna') || g.includes('vacunas')) return 'bg-pink-50 text-pink-800 border-pink-200';
-      return 'bg-gray-50 text-gray-700 border-gray-200';
-    }
-
-    function renderizarInventario() {
-      const tbody = document.getElementById('inv-table-body');
-      const counter = document.getElementById('inv-counter');
-      if (!tbody) return;
-
-      tbody.innerHTML = '';
-      if (counter) counter.textContent = `${filteredInventory.length} de ${inventoryData.length} variables`;
-
-      if (!filteredInventory.length) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500 text-xs">No se encontraron variables con los criterios de búsqueda.</td></tr>`;
-        return;
-      }
-
-      filteredInventory.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-emerald-50/40 transition-colors';
-
-        const badgeClass = getGroupBadgeClass(item.grupo);
-
-        tr.innerHTML = `
-          <td class="px-3 py-2 whitespace-nowrap">
-            <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded border ${badgeClass}">${item.grupo}</span>
-          </td>
-          <td class="px-3 py-2">
-            <div class="font-bold text-gray-900 text-xs">${item.indicador}</div>
-            <div class="text-[9.5px] text-gray-400 font-mono mt-0.5">${item.id}</div>
-          </td>
-          <td class="px-3 py-2 text-gray-600 text-xs max-w-[400px] leading-relaxed">${item.descripcion}</td>
-          <td class="px-3 py-2 whitespace-nowrap">
-            <span class="text-[10px] font-semibold text-gray-800 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">${item.resolucion_temporal}</span>
-          </td>
-          <td class="px-3 py-2 text-gray-700 font-medium text-xs whitespace-nowrap">
-            ${item.fuente}
-          </td>
-        `;
-
-        tbody.appendChild(tr);
-      });
-    }
-
-    function descargarInventarioCSV() {
-      if (!filteredInventory.length) return;
-      const headers = ["Grupo", "Indicador", "ID", "Descripcion", "Resolucion_Temporal", "Fuente"];
-      const rows = filteredInventory.map(item => [
-        `"${item.grupo}"`,
-        `"${item.indicador.replace(/"/g, '""')}"`,
-        `"${item.id}"`,
-        `"${item.descripcion.replace(/"/g, '""')}"`,
-        `"${item.resolucion_temporal}"`,
-        `"${item.fuente.replace(/"/g, '""')}"`
-      ]);
-      const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-      const link = document.createElement("a");
-      link.setAttribute("href", encodeURI(csvContent));
-      link.setAttribute("download", `inventario_variables_${new Date().toISOString().slice(0,10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    async function initApp() {
-      const res = await fetch('/api/config');
-      configBases = await res.json();
-      populateBivSelects();
-      onNivelChanged();
-      cargarInventario();
-    }
-
-    function populateBivSelects() {
-      const b1 = document.getElementById('biv-base-1');
-      const b2 = document.getElementById('biv-base-2');
-      if (!b1 || !b2) return;
-      b1.innerHTML = '';
-      b2.innerHTML = '';
-      const nivel = document.getElementById('nivel-select')?.value || 'departamento';
-      const keys = Object.keys(configBases).filter(k => configBases[k].niveles.includes(nivel));
-      keys.forEach(k => {
-        b1.appendChild(new Option(configBases[k].label, k));
-        b2.appendChild(new Option(configBases[k].label, k));
-      });
-      if (keys.length > 1) b2.value = keys[1];
-      onBivBase1Changed();
-      onBivBase2Changed();
-    }
-
-    function onNivelChanged() {
-      const nivel = document.getElementById('nivel-select').value;
-      const baseSelect = document.getElementById('base-select');
-      baseSelect.innerHTML = '';
-
-      Object.keys(configBases).forEach(k => {
-        const item = configBases[k];
-        if (item.niveles.includes(nivel)) {
-          const opt = document.createElement('option');
-          opt.value = k;
-          opt.textContent = item.label;
-          baseSelect.appendChild(opt);
-        }
-      });
-      populateBivSelects();
-      onBaseChanged();
-    }
-
-    function onBaseChanged() {
-      const baseKey = document.getElementById('base-select').value;
-      const item = configBases[baseKey];
-      const indSelect = document.getElementById('indicador-select');
-      indSelect.innerHTML = '';
-
-      item.indicadores.forEach(ind => {
-        const opt = document.createElement('option');
-        opt.value = ind.id;
-        opt.textContent = ind.label;
-        indSelect.appendChild(opt);
-      });
-
-      const contAnios = document.getElementById('contenedor-anios');
-      if (item.tiene_anios) {
-        contAnios.classList.remove('hidden');
-        setupDualSlider('slider-uni', item.min_anio, item.max_anio, item.min_anio, item.max_anio);
-      } else {
-        contAnios.classList.add('hidden');
-      }
-
-      cargarDatos();
-    }
-
-    // --- TOGGLE INVERT PALETTE ---
-    function toggleInvertPalette() {
-      isInvertedPalette = !isInvertedPalette;
-      const label = document.getElementById('label-invert-status');
-      if (label) {
-        if (!isInvertedPalette) {
-          label.textContent = 'Azul Alto / Rojo Bajo';
-          label.className = 'text-[9.5px] text-emerald-800 font-bold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded';
-        } else {
-          label.textContent = 'Rojo Alto / Azul Bajo';
-          label.className = 'text-[9.5px] text-rose-800 font-bold bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded';
-        }
-      }
-      actualizarCapaMapa();
-    }
-
-    // --- REUSABLE DUAL SLIDER WITH ANTI-TRAP LOGIC ---
+    // --- REUSABLE DUAL SLIDER ---
     function setupDualSlider(idPrefix, minLimit, maxLimit, defaultMin, defaultMax) {
       sliderBounds[idPrefix] = { min: minLimit, max: maxLimit };
       const sMin = document.getElementById(`${idPrefix}-min`);
@@ -717,7 +590,7 @@
     }
 
     function onSliderContainerPointerDown(e, idPrefix) {
-      const bounds = sliderBounds[idPrefix] || { min: 2000, max: 2024 };
+      const bounds = sliderBounds[idPrefix] || { min: 2000, max: 2025 };
       const rect = e.currentTarget.getBoundingClientRect();
       const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
       const clickVal = bounds.min + ratio * (bounds.max - bounds.min);
@@ -744,7 +617,7 @@
       const minVal = parseInt(sMin.value, 10);
       const maxVal = parseInt(sMax.value, 10);
       if (minVal === maxVal) {
-        const bounds = sliderBounds[idPrefix] || { min: 2000, max: 2024 };
+        const bounds = sliderBounds[idPrefix] || { min: 2000, max: 2025 };
         const rect = e.currentTarget.getBoundingClientRect();
         const ratio = (e.clientX - rect.left) / rect.width;
         const currentRatio = (minVal - bounds.min) / (bounds.max - bounds.min || 1);
@@ -784,15 +657,17 @@
 
     function onDualSliderCommit(idPrefix) {
       clearTimeout(sliderDebounceTimer);
-      if (idPrefix === 'slider-uni') {
-        cargarDatos();
+      if (idPrefix === 'slider-data') {
+        cargarDatosMultiples();
+      } else if (idPrefix === 'slider-uni') {
+        cargarDatosMapaUni();
       } else if (idPrefix === 'slider-biv1' || idPrefix === 'slider-biv2') {
         cargarDatosBivariados();
       }
     }
 
     function updateDualSliderDisplay(idPrefix) {
-      const bounds = sliderBounds[idPrefix] || { min: 2000, max: 2024 };
+      const bounds = sliderBounds[idPrefix] || { min: 2000, max: 2025 };
       const sMin = document.getElementById(`${idPrefix}-min`);
       const sMax = document.getElementById(`${idPrefix}-max`);
       const highlight = document.getElementById(`${idPrefix}-highlight`);
@@ -816,38 +691,218 @@
       }
     }
 
-    function onMapModeChanged(mode) {
-      currentMapMode = mode;
-      const secUni = document.getElementById('seccion-filtros-univariado');
-      const secBiv = document.getElementById('seccion-filtros-bivariado');
-      const bivLegend = document.getElementById('bivariate-legend');
-      const bivRankToggle = document.getElementById('biv-ranking-var-toggle');
-      const invCont = document.getElementById('contenedor-invert-palette');
-      const isMapVisible = !document.getElementById('vista-mapa').classList.contains('hidden');
+    // --- MULTI-INDICATOR PANEL FOR DATA TAB ---
+    function renderMultiIndicatorsPanel() {
+      const container = document.getElementById('multi-indicators-list');
+      if (!container) return;
+      container.innerHTML = '';
 
-      if (mode === 'bivariado') {
-        secUni.classList.add('hidden');
-        secBiv.classList.remove('hidden');
-        if (bivLegend && isMapVisible) bivLegend.classList.remove('hidden');
-        if (invCont) invCont.classList.add('hidden');
-        if (bivRankToggle) bivRankToggle.classList.remove('hidden');
-        if (legendControl && mapInstance) mapInstance.removeControl(legendControl);
-        updateBivRankingButtons();
-        cargarDatosBivariados();
+      const nivel = document.getElementById('nivel-select')?.value || 'departamento';
+      const query = (document.getElementById('multi-search')?.value || '').toLowerCase().trim();
+
+      const basesKeys = Object.keys(configBases).filter(k => configBases[k].niveles.includes(nivel));
+
+      basesKeys.forEach(baseKey => {
+        const base = configBases[baseKey];
+        const matchingIndicators = base.indicadores.filter(ind => {
+          if (!query) return true;
+          return ind.label.toLowerCase().includes(query) || ind.id.toLowerCase().includes(query) || base.label.toLowerCase().includes(query);
+        });
+
+        if (matchingIndicators.length === 0) return;
+
+        const baseCheckedCount = matchingIndicators.filter(ind => selectedMultiIndicators.has(`${baseKey}:${ind.id}`)).length;
+        const allBaseChecked = baseCheckedCount === matchingIndicators.length;
+
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'border border-gray-200 rounded bg-white overflow-hidden shadow-2xs';
+
+        // Base Header
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'px-2.5 py-1.5 bg-gray-50 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition border-b border-gray-100';
+        headerDiv.innerHTML = `
+          <div class="flex items-center space-x-1.5 flex-1 truncate">
+            <input type="checkbox" id="multi-base-${baseKey}" ${allBaseChecked ? 'checked' : ''} onclick="event.stopPropagation(); toggleBaseAll('${baseKey}', this.checked)" class="rounded text-emerald-700 focus:ring-emerald-600 h-3.5 w-3.5 cursor-pointer">
+            <span class="font-bold text-[11px] text-gray-800 truncate" onclick="toggleAccordion('acc-${baseKey}')">${base.label}</span>
+          </div>
+          <span class="text-[9px] font-bold text-gray-500 bg-gray-200/80 px-1.5 py-0.2 rounded">${baseCheckedCount}/${matchingIndicators.length}</span>
+        `;
+        groupDiv.appendChild(headerDiv);
+
+        // Indicator Checkboxes Container
+        const listDiv = document.createElement('div');
+        listDiv.id = `acc-${baseKey}`;
+        listDiv.className = 'p-1.5 space-y-1';
+
+        matchingIndicators.forEach(ind => {
+          const key = `${baseKey}:${ind.id}`;
+          const isChecked = selectedMultiIndicators.has(key);
+
+          const itemLabel = document.createElement('label');
+          itemLabel.className = 'flex items-start space-x-1.5 p-1 rounded hover:bg-emerald-50/50 cursor-pointer transition text-[10.5px] text-gray-700 leading-tight';
+          itemLabel.innerHTML = `
+            <input type="checkbox" value="${key}" ${isChecked ? 'checked' : ''} onchange="onMultiIndicatorToggled('${key}', this.checked)" class="mt-0.5 rounded text-emerald-700 focus:ring-emerald-600 h-3 w-3 cursor-pointer">
+            <div class="flex-1">
+              <div class="font-medium text-gray-800">${ind.label}</div>
+              <div class="text-[9px] text-gray-400 font-mono">${ind.id}</div>
+            </div>
+          `;
+          listDiv.appendChild(itemLabel);
+        });
+
+        groupDiv.appendChild(listDiv);
+        container.appendChild(groupDiv);
+      });
+
+      updateMultiCountBadge();
+    }
+
+    function toggleAccordion(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('hidden');
+    }
+
+    function onMultiIndicatorToggled(key, isChecked) {
+      if (isChecked) {
+        selectedMultiIndicators.add(key);
       } else {
-        secUni.classList.remove('hidden');
-        secBiv.classList.add('hidden');
-        if (bivLegend) bivLegend.classList.add('hidden');
-        if (invCont && isMapVisible) invCont.classList.remove('hidden');
-        if (bivRankToggle) bivRankToggle.classList.add('hidden');
-        if (legendControl && mapInstance && isMapVisible) legendControl.addTo(mapInstance);
-        const headerTh = document.getElementById('ranking-metric-header');
-        if (headerTh) headerTh.textContent = currentUniLabel || 'Valor';
-        cargarDatos();
+        selectedMultiIndicators.delete(key);
+      }
+      renderMultiIndicatorsPanel();
+      cargarDatosMultiples();
+    }
+
+    function toggleBaseAll(baseKey, isChecked) {
+      const base = configBases[baseKey];
+      if (!base) return;
+      base.indicadores.forEach(ind => {
+        const key = `${baseKey}:${ind.id}`;
+        if (isChecked) {
+          selectedMultiIndicators.add(key);
+        } else {
+          selectedMultiIndicators.delete(key);
+        }
+      });
+      renderMultiIndicatorsPanel();
+      cargarDatosMultiples();
+    }
+
+    function marcarTodosMulti() {
+      const nivel = document.getElementById('nivel-select')?.value || 'departamento';
+      Object.keys(configBases).forEach(baseKey => {
+        if (configBases[baseKey].niveles.includes(nivel)) {
+          configBases[baseKey].indicadores.forEach(ind => {
+            selectedMultiIndicators.add(`${baseKey}:${ind.id}`);
+          });
+        }
+      });
+      renderMultiIndicatorsPanel();
+      cargarDatosMultiples();
+    }
+
+    function desmarcarTodosMulti() {
+      selectedMultiIndicators.clear();
+      renderMultiIndicatorsPanel();
+      cargarDatosMultiples();
+    }
+
+    function filtrarIndicadoresMulti() {
+      renderMultiIndicatorsPanel();
+    }
+
+    function updateMultiCountBadge() {
+      const badge = document.getElementById('multi-count-badge');
+      if (badge) {
+        badge.textContent = `${selectedMultiIndicators.size} seleccionadas`;
       }
     }
 
-    async function cargarDatos() {
+    // --- CARGAR DATOS MULTIPLES (MERGE N INDICADORES EN TABLA DATA) ---
+    async function cargarDatosMultiples() {
+      const nivel = document.getElementById('nivel-select').value;
+      const sMin = document.getElementById('slider-data-min');
+      const sMax = document.getElementById('slider-data-max');
+      const anioMin = sMin ? sMin.value : 2000;
+      const anioMax = sMax ? sMax.value : 2025;
+
+      if (selectedMultiIndicators.size === 0) {
+        datosActuales = { columns: ['ubigeo', 'nombre'], rows: [] };
+        renderTabla(datosActuales);
+        return;
+      }
+
+      document.getElementById('contador-filas').textContent = 'Cargando variables...';
+
+      const items = Array.from(selectedMultiIndicators).map(key => {
+        const [base, indicador] = key.split(':');
+        const baseConf = configBases[base];
+        const indConf = baseConf?.indicadores.find(i => i.id === indicador);
+        return { base, indicador, label: indConf?.label || indicador };
+      });
+
+      try {
+        const promises = items.map(it => 
+          fetch(`/api/data?nivel=${nivel}&base=${it.base}&indicador=${it.indicador}&anio_min=${anioMin}&anio_max=${anioMax}`)
+            .then(r => r.json())
+            .then(data => ({ data, item: it }))
+        );
+
+        const results = await Promise.all(promises);
+
+        // Merge all datasets by ubigeo and nombre
+        const mergedColsSet = new Set(['ubigeo', 'nombre']);
+        const allOrderedCols = ['ubigeo', 'nombre'];
+        const rowsByUbigeo = {};
+
+        results.forEach(({ data, item }) => {
+          if (!data || !data.rows) return;
+          const metricCols = (data.columns || []).filter(c => c.toLowerCase() !== 'ubigeo' && c.toLowerCase() !== 'nombre');
+
+          metricCols.forEach(col => {
+            if (!mergedColsSet.has(col)) {
+              mergedColsSet.add(col);
+              allOrderedCols.push(col);
+            }
+          });
+
+          data.rows.forEach(r => {
+            const u = String(r.ubigeo || '').trim();
+            if (!u) return;
+            if (!rowsByUbigeo[u]) {
+              rowsByUbigeo[u] = { ubigeo: u, nombre: r.nombre || '' };
+            } else if (!rowsByUbigeo[u].nombre && r.nombre) {
+              rowsByUbigeo[u].nombre = r.nombre;
+            }
+
+            metricCols.forEach(col => {
+              rowsByUbigeo[u][col] = (r[col] !== undefined && r[col] !== null) ? r[col] : '';
+            });
+          });
+        });
+
+        const mergedRows = Object.values(rowsByUbigeo).map(row => {
+          allOrderedCols.forEach(col => {
+            if (row[col] === undefined) row[col] = '';
+          });
+          return row;
+        });
+
+        mergedRows.sort((a, b) => String(a.ubigeo).localeCompare(String(b.ubigeo)));
+
+        datosActuales = {
+          columns: allOrderedCols,
+          rows: mergedRows
+        };
+
+        renderTabla(datosActuales);
+      } catch (err) {
+        console.error("Error cargando múltiples variables:", err);
+        document.getElementById('contador-filas').textContent = 'Error al cargar datos';
+      }
+    }
+
+    // --- CARGAR DATOS MAPA UNIVARIADO ---
+    async function cargarDatosMapaUni() {
       const nivel = document.getElementById('nivel-select').value;
       const base = document.getElementById('base-select').value;
       const indicador = document.getElementById('indicador-select').value;
@@ -860,117 +915,18 @@
         const res = await fetch(`/api/data?nivel=${nivel}&base=${base}&indicador=${indicador}&anio_min=${anioMin}&anio_max=${anioMax}`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'No se pudieron cargar los datos');
+        
         datosActuales = data;
-        renderTabla(data);
-        renderRanking();
-
         if (!document.getElementById('vista-mapa').classList.contains('hidden') && currentMapMode === 'univariado') {
           actualizarCapaMapa();
         }
       } catch (err) {
         document.getElementById('map-status').textContent = 'No se pudieron cargar los datos';
-        console.error("Error cargando datos:", err);
+        console.error("Error cargando mapa:", err);
       }
     }
 
-    // --- BIVARIATE HANDLERS ---
-    function onBivBase1Changed() {
-      const baseKey = document.getElementById('biv-base-1').value;
-      const item = configBases[baseKey];
-      if (!item) return;
-      const sel = document.getElementById('biv-ind-1');
-      sel.innerHTML = '';
-      item.indicadores.forEach(ind => sel.appendChild(new Option(ind.label, ind.id)));
-      
-      const box = document.getElementById('biv-slider-box-1');
-      if (item.tiene_anios) {
-        box.classList.remove('hidden');
-        setupDualSlider('slider-biv1', item.min_anio, item.max_anio, item.min_anio, item.max_anio);
-      } else {
-        box.classList.add('hidden');
-      }
-      cargarDatosBivariados();
-    }
-
-    function onBivBase2Changed() {
-      const baseKey = document.getElementById('biv-base-2').value;
-      const item = configBases[baseKey];
-      if (!item) return;
-      const sel = document.getElementById('biv-ind-2');
-      sel.innerHTML = '';
-      item.indicadores.forEach(ind => sel.appendChild(new Option(ind.label, ind.id)));
-      
-      const box = document.getElementById('biv-slider-box-2');
-      if (item.tiene_anios) {
-        box.classList.remove('hidden');
-        setupDualSlider('slider-biv2', item.min_anio, item.max_anio, item.min_anio, item.max_anio);
-      } else {
-        box.classList.add('hidden');
-      }
-      cargarDatosBivariados();
-    }
-
-    function mergeBivariateDatasets(d1, d2, lbl1, lbl2) {
-      if (!d1 || !d1.rows) return d2 || { columns: [], rows: [] };
-      if (!d2 || !d2.rows) return d1 || { columns: [], rows: [] };
-
-      const cols1 = (d1.columns || []).filter(c => c.toLowerCase() !== 'ubigeo' && c.toLowerCase() !== 'nombre');
-      const cols2 = (d2.columns || []).filter(c => c.toLowerCase() !== 'ubigeo' && c.toLowerCase() !== 'nombre');
-
-      const nameMap1 = {};
-      cols1.forEach(c => {
-        nameMap1[c] = `${c} [${lbl1}]`;
-      });
-
-      const nameMap2 = {};
-      cols2.forEach(c => {
-        nameMap2[c] = `${c} [${lbl2}]`;
-      });
-
-      const mergedCols = ['ubigeo', 'nombre', ...cols1.map(c => nameMap1[c]), ...cols2.map(c => nameMap2[c])];
-      const rowsByUbigeo = {};
-
-      (d1.rows || []).forEach(r => {
-        const u = String(r.ubigeo || '').trim();
-        if (!u) return;
-        if (!rowsByUbigeo[u]) {
-          rowsByUbigeo[u] = { ubigeo: u, nombre: r.nombre || '' };
-        } else if (!rowsByUbigeo[u].nombre && r.nombre) {
-          rowsByUbigeo[u].nombre = r.nombre;
-        }
-        cols1.forEach(c => {
-          rowsByUbigeo[u][nameMap1[c]] = r[c] !== undefined && r[c] !== null ? r[c] : '';
-        });
-      });
-
-      (d2.rows || []).forEach(r => {
-        const u = String(r.ubigeo || '').trim();
-        if (!u) return;
-        if (!rowsByUbigeo[u]) {
-          rowsByUbigeo[u] = { ubigeo: u, nombre: r.nombre || '' };
-        } else if (!rowsByUbigeo[u].nombre && r.nombre) {
-          rowsByUbigeo[u].nombre = r.nombre;
-        }
-        cols2.forEach(c => {
-          rowsByUbigeo[u][nameMap2[c]] = r[c] !== undefined && r[c] !== null ? r[c] : '';
-        });
-      });
-
-      const mergedRows = Object.values(rowsByUbigeo).map(row => {
-        mergedCols.forEach(col => {
-          if (row[col] === undefined) row[col] = '';
-        });
-        return row;
-      });
-
-      mergedRows.sort((a, b) => String(a.ubigeo).localeCompare(String(b.ubigeo)));
-
-      return {
-        columns: mergedCols,
-        rows: mergedRows
-      };
-    }
-
+    // --- CARGAR DATOS MAPA BIVARIADO ---
     async function cargarDatosBivariados() {
       if (currentMapMode !== 'bivariado') return;
       const nivel = document.getElementById('nivel-select').value;
@@ -1002,10 +958,6 @@
         datosBiv1 = await r1.json();
         datosBiv2 = await r2.json();
 
-        // Merge datasets for Data tab table & CSV export
-        datosActuales = mergeBivariateDatasets(datosBiv1, datosBiv2, compactLbl1, compactLbl2);
-        renderTabla(datosActuales);
-
         if (!document.getElementById('vista-mapa').classList.contains('hidden')) {
           actualizarCapaBivariada();
         }
@@ -1020,25 +972,26 @@
       thead.innerHTML = '';
       tbody.innerHTML = '';
 
-      document.getElementById('contador-filas').textContent = `${data.rows.length.toLocaleString()} registros`;
+      const colCount = (data.columns || []).filter(c => c.toLowerCase() !== 'ubigeo' && c.toLowerCase() !== 'nombre').length;
+      document.getElementById('contador-filas').textContent = `${data.rows.length.toLocaleString()} registros | ${colCount} columnas de datos`;
 
-      if (!data.columns || data.columns.length === 0) {
-        tbody.innerHTML = '<tr><td class="p-4 text-center text-gray-500">No hay datos disponibles.</td></tr>';
+      if (!data.columns || data.columns.length === 0 || !data.rows || data.rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-500 text-xs">Selecciona al menos una variable en el panel lateral para visualizar la tabla.</td></tr>';
         return;
       }
 
       const trHead = document.createElement('tr');
       data.columns.forEach(col => {
         const th = document.createElement('th');
-        th.className = "px-3 py-2 text-left font-bold text-gray-700 border-b";
+        th.className = "px-3 py-2 text-left font-bold text-gray-700 border-b whitespace-nowrap";
         th.textContent = col;
         trHead.appendChild(th);
       });
       thead.appendChild(trHead);
 
-      data.rows.slice(0, 150).forEach(row => {
+      data.rows.slice(0, 200).forEach(row => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-emerald-50/50";
+        tr.className = "hover:bg-emerald-50/40 transition-colors";
         data.columns.forEach(col => {
           const td = document.createElement('td');
           td.className = "px-3 py-1.5 border-b text-gray-700 whitespace-nowrap";
@@ -1049,198 +1002,78 @@
       });
     }
 
-    // --- COLOR PALETTE WITH INVERT SUPPORT ---
+    // --- MAP COLORING & RENDERING ---
     function getColor(val, min, max) {
       if (val === null || val === undefined || isNaN(val)) return '#e2e8f0';
-      if (min === max) return '#fee08b';
-      const t = (val - min) / ((max - min) || 1);
+      if (min === max) return '#67a9cf';
+      const ratio = Math.max(0, Math.min(1, (val - min) / (max - min)));
       
-      if (!isInvertedPalette) {
-        // Normal: Highest = Blue, Lowest = Red
-        return t > 0.8 ? '#2166ac' :
-               t > 0.6 ? '#67a9cf' :
-               t > 0.4 ? '#fee08b' :
-               t > 0.2 ? '#f46d43' : '#b2182b';
-      } else {
-        // Invertido: Highest = Red, Lowest = Blue
-        return t > 0.8 ? '#b2182b' :
-               t > 0.6 ? '#f46d43' :
-               t > 0.4 ? '#fee08b' :
-               t > 0.2 ? '#67a9cf' : '#2166ac';
-      }
+      const palette = !isInvertedPalette
+        ? ['#2166ac', '#67a9cf', '#fee08b', '#f46d43', '#b2182b']
+        : ['#b2182b', '#f46d43', '#fee08b', '#67a9cf', '#2166ac'];
+
+      if (ratio <= 0.25) return palette[0];
+      if (ratio <= 0.50) return palette[1];
+      if (ratio <= 0.75) return palette[2];
+      if (ratio <= 0.90) return palette[3];
+      return palette[4];
     }
 
-    // --- RANKING INTERACTIVITY (UNIVARIADO & BIVARIADO) ---
-    function renderRanking() {
-      if (currentMapMode === 'bivariado') {
-        renderRankingBivariado();
-        return;
+    function toggleInvertPalette() {
+      isInvertedPalette = !isInvertedPalette;
+      const label = document.getElementById('label-invert-status');
+      if (label) {
+        if (!isInvertedPalette) {
+          label.textContent = 'Azul Alto / Rojo Bajo';
+          label.className = 'text-[9.5px] text-emerald-800 font-bold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded';
+        } else {
+          label.textContent = 'Rojo Alto / Azul Bajo';
+          label.className = 'text-[9.5px] text-rose-800 font-bold bg-rose-50 border border-rose-200 px-1.5 py-0.5 rounded';
+        }
       }
-
-      const body = document.getElementById('ranking-body');
-      body.innerHTML = '';
-      const headerTh = document.getElementById('ranking-metric-header');
-      if (headerTh) headerTh.textContent = currentUniLabel || 'Valor';
-
-      const mode = document.querySelector('input[name="ranking-mode"]:checked')?.value || rankingMode;
-      rankingMode = mode;
-
-      const rows = Object.keys(currentUniMap)
-        .filter(u => currentUniMap[u] && !isNaN(currentUniMap[u].val))
-        .map(u => ({
-          ubigeo: u,
-          name: currentUniMap[u].nom || u || 'Sin nombre',
-          value: currentUniMap[u].val
-        }))
-        .sort((a, b) => mode === 'max' ? b.value - a.value : a.value - b.value)
-        .slice(0, 10);
-
-      rows.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.title = 'Haz clic para enfocar en el mapa';
-        tr.innerHTML = `<td>${row.name}</td><td>${row.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>`;
-        
-        tr.onmouseenter = () => {
-          const layer = layersByUbigeo[row.ubigeo];
-          if (layer) {
-            layer.setStyle({ weight: 3, color: '#073B3A', fillOpacity: 1 });
-            layer.bringToFront();
-            layer.openTooltip();
-          }
-        };
-
-        tr.onmouseleave = () => {
-          const layer = layersByUbigeo[row.ubigeo];
-          if (layer && geoJsonLayer) {
-            geoJsonLayer.resetStyle(layer);
-            layer.closeTooltip();
-          }
-        };
-
-        tr.onclick = () => {
-          const layer = layersByUbigeo[row.ubigeo];
-          if (layer && mapInstance) {
-            if (layer.getBounds && layer.getBounds().isValid()) {
-              mapInstance.fitBounds(layer.getBounds(), { maxZoom: 9, padding: [40, 40] });
-            }
-            layer.setStyle({ weight: 3.5, color: '#073B3A', fillOpacity: 1 });
-            layer.bringToFront();
-            layer.openTooltip();
-          }
-        };
-
-        body.appendChild(tr);
-      });
-      if (!rows.length) body.innerHTML = '<tr><td colspan="2">No hay valores numéricos</td></tr>';
-    }
-
-    function renderRankingBivariado() {
-      const body = document.getElementById('ranking-body');
-      body.innerHTML = '';
-      const mode = document.querySelector('input[name="ranking-mode"]:checked')?.value || rankingMode;
-      rankingMode = mode;
-
-      const headerTh = document.getElementById('ranking-metric-header');
-      if (headerTh) {
-        headerTh.textContent = (bivRankingVar === 1 ? currentBivLabel1 : currentBivLabel2) || 'Valor';
-      }
-
-      const mapTarget = bivRankingVar === 1 ? currentBivMap1 : currentBivMap2;
-      const otherMap = bivRankingVar === 1 ? currentBivMap2 : currentBivMap1;
-
-      const rows = Object.keys(mapTarget)
-        .filter(u => mapTarget[u] && !isNaN(mapTarget[u].val))
-        .map(u => ({
-          ubigeo: u,
-          name: mapTarget[u].nom || (otherMap[u] ? otherMap[u].nom : u),
-          value: mapTarget[u].val
-        }))
-        .sort((a, b) => mode === 'max' ? b.value - a.value : a.value - b.value)
-        .slice(0, 10);
-
-      rows.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.title = 'Haz clic para enfocar en el mapa';
-        tr.innerHTML = `<td>${row.name}</td><td>${row.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>`;
-
-        tr.onmouseenter = () => {
-          const layer = layersByUbigeo[row.ubigeo];
-          if (layer) {
-            layer.setStyle({ weight: 3, color: '#073B3A', fillOpacity: 1 });
-            layer.bringToFront();
-            layer.openTooltip();
-          }
-        };
-
-        tr.onmouseleave = () => {
-          const layer = layersByUbigeo[row.ubigeo];
-          if (layer && geoJsonLayer) {
-            geoJsonLayer.resetStyle(layer);
-            layer.closeTooltip();
-          }
-        };
-
-        tr.onclick = () => {
-          const layer = layersByUbigeo[row.ubigeo];
-          if (layer && mapInstance) {
-            if (layer.getBounds && layer.getBounds().isValid()) {
-              mapInstance.fitBounds(layer.getBounds(), { maxZoom: 9, padding: [40, 40] });
-            }
-            layer.setStyle({ weight: 3.5, color: '#073B3A', fillOpacity: 1 });
-            layer.bringToFront();
-            layer.openTooltip();
-          }
-        };
-
-        body.appendChild(tr);
-      });
-      if (!rows.length) body.innerHTML = '<tr><td colspan="2">No hay valores numéricos</td></tr>';
+      actualizarCapaMapa();
     }
 
     async function actualizarCapaMapa() {
       if (!mapInstance || currentMapMode !== 'univariado') return;
       const nivel = document.getElementById('nivel-select').value;
-      const status = document.getElementById('map-status');
+      const indLabel = document.getElementById('indicador-select')?.selectedOptions[0]?.textContent || 'Indicador';
+      const cleanLabel = cleanIndicatorName(indLabel);
+      currentUniLabel = cleanLabel;
 
-      const fullLbl = document.getElementById('indicador-select')?.selectedOptions[0]?.textContent || 'Indicador';
-      const compactLbl = cleanIndicatorName(fullLbl);
+      const metricCols = (datosActuales.columns || []).filter(c => c.toLowerCase() !== 'ubigeo' && c.toLowerCase() !== 'nombre');
       
+      // Use annual columns for choropleth mapping if present (to avoid duplicating annual with monthly sum)
+      let valueCols = metricCols.filter(c => !/_\d{2}$/.test(c));
+      if (valueCols.length === 0) valueCols = metricCols;
+
       const sMin = document.getElementById('slider-uni-min');
       const sMax = document.getElementById('slider-uni-max');
-      const contAnios = document.getElementById('contenedor-anios');
-      const hasAnios = contAnios && !contAnios.classList.contains('hidden');
-      
-      let displayLabel = compactLbl;
-      if (hasAnios && sMin && sMax) {
-        displayLabel += sMin.value === sMax.value ? ` (${sMin.value})` : ` (${sMin.value}-${sMax.value})`;
-      }
+      const anioMin = sMin ? sMin.value : '';
+      const anioMax = sMax ? sMax.value : '';
+      const rangeTxt = anioMin && anioMax && anioMin !== anioMax ? ` (${anioMin}-${anioMax})` : anioMin ? ` (${anioMin})` : '';
+      const displayLabel = `${cleanLabel}${rangeTxt}`;
 
-      currentUniLabel = displayLabel;
-      status.textContent = `Mapa: ${displayLabel}`;
-
-      const cols = (datosActuales.columns || []).filter(c => c.toLowerCase() !== 'ubigeo' && c.toLowerCase() !== 'nombre');
-      if (!cols.length || !datosActuales.rows) {
-        status.textContent = 'Sin indicador numérico';
-        renderRanking();
-        return;
-      }
+      document.getElementById('map-status').textContent = `${displayLabel} - Nivel: ${nivel.toUpperCase()}`;
 
       const mapaVal = {};
-      let vals = [];
-      datosActuales.rows.forEach(r => {
+      let minVal = Infinity, maxVal = -Infinity;
+      const vals = [];
+
+      (datosActuales.rows || []).forEach(r => {
         const u = String(r.ubigeo).trim();
-        const rVals = cols.map(c => parseFloat(r[c])).filter(v => !isNaN(v));
+        const rVals = valueCols.map(c => parseFloat(r[c])).filter(v => !isNaN(v));
         if (rVals.length) {
           const avg = rVals.reduce((a, b) => a + b, 0) / rVals.length;
           mapaVal[u] = { val: avg, nom: r.nombre || '' };
           vals.push(avg);
+          if (avg < minVal) minVal = avg;
+          if (avg > maxVal) maxVal = avg;
         }
       });
 
       currentUniMap = mapaVal;
-
-      const minVal = vals.length ? Math.min(...vals) : 0;
-      const maxVal = vals.length ? Math.max(...vals) : 1;
+      if (minVal === Infinity) { minVal = 0; maxVal = 100; }
 
       updateVerticalLegend(minVal, maxVal);
 
@@ -1293,6 +1126,12 @@
       const cols1 = (datosBiv1.columns || []).filter(c => c.toLowerCase() !== 'ubigeo' && c.toLowerCase() !== 'nombre');
       const cols2 = (datosBiv2.columns || []).filter(c => c.toLowerCase() !== 'ubigeo' && c.toLowerCase() !== 'nombre');
 
+      let valCols1 = cols1.filter(c => !/_\d{2}$/.test(c));
+      if (valCols1.length === 0) valCols1 = cols1;
+
+      let valCols2 = cols2.filter(c => !/_\d{2}$/.test(c));
+      if (valCols2.length === 0) valCols2 = cols2;
+
       const fullLbl1 = document.getElementById('biv-ind-1')?.selectedOptions[0]?.textContent || 'Var 1';
       const fullLbl2 = document.getElementById('biv-ind-2')?.selectedOptions[0]?.textContent || 'Var 2';
 
@@ -1303,12 +1142,11 @@
       document.getElementById('biv-axis-label-x').textContent = `${compactLbl1} →`;
       document.getElementById('biv-axis-label-y').textContent = `${compactLbl2} →`;
 
-      // Extract aggregate/mean values across columns for each row
       const vals1 = [];
       const map1 = {};
       (datosBiv1.rows || []).forEach(r => {
         const u = String(r.ubigeo).trim();
-        const rVals = cols1.map(c => parseFloat(r[c])).filter(v => !isNaN(v));
+        const rVals = valCols1.map(c => parseFloat(r[c])).filter(v => !isNaN(v));
         if (rVals.length) {
           const avg = rVals.reduce((a, b) => a + b, 0) / rVals.length;
           map1[u] = { val: avg, nom: r.nombre || '' };
@@ -1320,7 +1158,7 @@
       const map2 = {};
       (datosBiv2.rows || []).forEach(r => {
         const u = String(r.ubigeo).trim();
-        const rVals = cols2.map(c => parseFloat(r[c])).filter(v => !isNaN(v));
+        const rVals = valCols2.map(c => parseFloat(r[c])).filter(v => !isNaN(v));
         if (rVals.length) {
           const avg = rVals.reduce((a, b) => a + b, 0) / rVals.length;
           map2[u] = { val: avg, nom: r.nombre || '' };
@@ -1489,6 +1327,168 @@
       }
     }
 
+    function renderRanking() {
+      if (currentMapMode === 'bivariado') {
+        renderRankingBivariado();
+        return;
+      }
+      const tbody = document.getElementById('ranking-body');
+      tbody.innerHTML = '';
+      const mode = document.querySelector('input[name="ranking-mode"]:checked')?.value || 'min';
+      
+      const arr = Object.entries(currentUniMap).map(([u, d]) => ({
+        ubigeo: u,
+        nombre: d.nom || u,
+        val: d.val
+      }));
+
+      arr.sort((a, b) => mode === 'min' ? a.val - b.val : b.val - a.val);
+
+      arr.slice(0, 10).forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-gray-100 cursor-pointer";
+        tr.onclick = () => {
+          const l = layersByUbigeo[item.ubigeo];
+          if (l) {
+            mapInstance.fitBounds(l.getBounds ? l.getBounds() : [l.getLatLng()]);
+            l.openTooltip();
+          }
+        };
+        tr.innerHTML = `
+          <td class="truncate max-w-[170px]" title="${item.nombre} (${item.ubigeo})">
+            <span class="font-bold text-gray-800">${item.nombre}</span>
+            <span class="text-gray-400 text-[10px] block">${item.ubigeo}</span>
+          </td>
+          <td class="font-bold text-emerald-800">${Number(item.val).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function setBivRankingVar(varNum) {
+      bivRankingVar = varNum;
+      updateBivRankingButtons();
+      renderRankingBivariado();
+    }
+
+    function updateBivRankingButtons() {
+      const btn1 = document.getElementById('biv-rank-btn-1');
+      const btn2 = document.getElementById('biv-rank-btn-2');
+      if (!btn1 || !btn2) return;
+      
+      const lbl1 = currentBivLabel1 || 'Var 1';
+      const lbl2 = currentBivLabel2 || 'Var 2';
+      
+      btn1.textContent = lbl1;
+      btn1.title = lbl1;
+      btn2.textContent = lbl2;
+      btn2.title = lbl2;
+
+      if (bivRankingVar === 1) {
+        btn1.className = 'flex-1 py-1 px-1.5 rounded bg-[#073B3A] text-white font-bold text-center truncate transition shadow-xs';
+        btn2.className = 'flex-1 py-1 px-1.5 rounded text-gray-700 hover:bg-gray-200 text-center truncate transition';
+      } else {
+        btn2.className = 'flex-1 py-1 px-1.5 rounded bg-[#073B3A] text-white font-bold text-center truncate transition shadow-xs';
+        btn1.className = 'flex-1 py-1 px-1.5 rounded text-gray-700 hover:bg-gray-200 text-center truncate transition';
+      }
+    }
+
+    function renderRankingBivariado() {
+      const tbody = document.getElementById('ranking-body');
+      tbody.innerHTML = '';
+      const mode = document.querySelector('input[name="ranking-mode"]:checked')?.value || 'min';
+      const targetMap = bivRankingVar === 1 ? currentBivMap1 : currentBivMap2;
+      const targetLbl = bivRankingVar === 1 ? currentBivLabel1 : currentBivLabel2;
+
+      const headerTh = document.getElementById('ranking-metric-header');
+      if (headerTh) headerTh.textContent = targetLbl || 'Valor';
+
+      const arr = Object.entries(targetMap).map(([u, d]) => ({
+        ubigeo: u,
+        nombre: d.nom || u,
+        val: d.val
+      }));
+
+      arr.sort((a, b) => mode === 'min' ? a.val - b.val : b.val - a.val);
+
+      arr.slice(0, 10).forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-gray-100 cursor-pointer";
+        tr.onclick = () => {
+          const l = layersByUbigeo[item.ubigeo];
+          if (l) {
+            mapInstance.fitBounds(l.getBounds ? l.getBounds() : [l.getLatLng()]);
+            l.openTooltip();
+          }
+        };
+        tr.innerHTML = `
+          <td class="truncate max-w-[170px]" title="${item.nombre} (${item.ubigeo})">
+            <span class="font-bold text-gray-800">${item.nombre}</span>
+            <span class="text-gray-400 text-[10px] block">${item.ubigeo}</span>
+          </td>
+          <td class="font-bold text-emerald-800">${Number(item.val).toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // --- TAB SWITCHING ---
+    function cambiarPestana(p) {
+      const vistaData = document.getElementById('vista-data');
+      const vistaMapa = document.getElementById('vista-mapa');
+      const vistaInv = document.getElementById('vista-inventario');
+      const tabDataBtn = document.getElementById('tab-data-btn');
+      const tabMapaBtn = document.getElementById('tab-mapa-btn');
+      const tabInvBtn = document.getElementById('tab-inventario-btn');
+      const sidebarMain = document.getElementById('sidebar-main');
+      const secFiltrosData = document.getElementById('seccion-filtros-data');
+      const secFiltrosMapa = document.getElementById('seccion-filtros-mapa');
+
+      if (p === 'data') {
+        if (sidebarMain) sidebarMain.classList.remove('hidden');
+        if (vistaData) vistaData.classList.remove('hidden');
+        if (vistaMapa) vistaMapa.classList.add('hidden');
+        if (vistaInv) vistaInv.classList.add('hidden');
+        if (secFiltrosData) secFiltrosData.classList.remove('hidden');
+        if (secFiltrosMapa) secFiltrosMapa.classList.add('hidden');
+
+        if (tabDataBtn) tabDataBtn.classList.add('active');
+        if (tabMapaBtn) tabMapaBtn.classList.remove('active');
+        if (tabInvBtn) tabInvBtn.classList.remove('active');
+
+        cargarDatosMultiples();
+      } else if (p === 'mapa') {
+        if (sidebarMain) sidebarMain.classList.remove('hidden');
+        if (vistaData) vistaData.classList.add('hidden');
+        if (vistaMapa) vistaMapa.classList.remove('hidden');
+        if (vistaInv) vistaInv.classList.add('hidden');
+        if (secFiltrosData) secFiltrosData.classList.add('hidden');
+        if (secFiltrosMapa) secFiltrosMapa.classList.remove('hidden');
+
+        if (tabDataBtn) tabDataBtn.classList.remove('active');
+        if (tabMapaBtn) tabMapaBtn.classList.add('active');
+        if (tabInvBtn) tabInvBtn.classList.remove('active');
+
+        initMap();
+        if (currentMapMode === 'univariado') {
+          cargarDatosMapaUni();
+        } else {
+          cargarDatosBivariados();
+        }
+      } else if (p === 'inventario') {
+        if (sidebarMain) sidebarMain.classList.add('hidden');
+        if (vistaData) vistaData.classList.add('hidden');
+        if (vistaMapa) vistaMapa.classList.add('hidden');
+        if (vistaInv) vistaInv.classList.remove('hidden');
+
+        if (tabDataBtn) tabDataBtn.classList.remove('active');
+        if (tabMapaBtn) tabMapaBtn.classList.remove('active');
+        if (tabInvBtn) tabInvBtn.classList.add('active');
+
+        cargarInventario();
+      }
+    }
+
     function initMap() {
       if (!mapInstance) {
         mapInstance = L.map('map').setView([-9.189967, -75.015152], 5);
@@ -1506,92 +1506,286 @@
         legendControl.addTo(mapInstance);
       }
       setTimeout(() => { mapInstance.invalidateSize(); }, 200);
-      actualizarCapaMapa();
     }
 
-    function cambiarPestana(p) {
+    function onMapModeChanged(mode) {
+      currentMapMode = mode;
+      const secUni = document.getElementById('seccion-mapa-univariado');
+      const secBiv = document.getElementById('seccion-mapa-bivariado');
+      const bivLegend = document.getElementById('bivariate-legend');
+      const bivRankToggle = document.getElementById('biv-ranking-var-toggle');
       const invCont = document.getElementById('contenedor-invert-palette');
-      const secUni = document.getElementById('seccion-filtros-univariado');
-      const secBiv = document.getElementById('seccion-filtros-bivariado');
-      const vistaData = document.getElementById('vista-data');
-      const vistaMapa = document.getElementById('vista-mapa');
-      const vistaInv = document.getElementById('vista-inventario');
-      const tabDataBtn = document.getElementById('tab-data-btn');
-      const tabMapaBtn = document.getElementById('tab-mapa-btn');
-      const tabInvBtn = document.getElementById('tab-inventario-btn');
-      const sidebarMain = document.getElementById('sidebar-main');
+      const isMapVisible = !document.getElementById('vista-mapa').classList.contains('hidden');
 
-      if (p === 'data') {
-        if (sidebarMain) sidebarMain.classList.remove('hidden');
-        if (vistaData) vistaData.classList.remove('hidden');
-        if (vistaMapa) vistaMapa.classList.add('hidden');
-        if (vistaInv) vistaInv.classList.add('hidden');
+      if (mode === 'bivariado') {
+        secUni.classList.add('hidden');
+        secBiv.classList.remove('hidden');
+        if (bivLegend && isMapVisible) bivLegend.classList.remove('hidden');
         if (invCont) invCont.classList.add('hidden');
-        
-        if (currentMapMode === 'bivariado') {
-          if (secUni) secUni.classList.add('hidden');
-          if (secBiv) secBiv.classList.remove('hidden');
-          cargarDatosBivariados();
-        } else {
-          if (secUni) secUni.classList.remove('hidden');
-          if (secBiv) secBiv.classList.add('hidden');
-          cargarDatos();
-        }
-
-        if (tabDataBtn) tabDataBtn.classList.add('active');
-        if (tabMapaBtn) tabMapaBtn.classList.remove('active');
-        if (tabInvBtn) tabInvBtn.classList.remove('active');
-      } else if (p === 'mapa') {
-        if (sidebarMain) sidebarMain.classList.remove('hidden');
-        if (vistaData) vistaData.classList.add('hidden');
-        if (vistaMapa) vistaMapa.classList.remove('hidden');
-        if (vistaInv) vistaInv.classList.add('hidden');
-
-        if (currentMapMode === 'bivariado') {
-          if (secUni) secUni.classList.add('hidden');
-          if (secBiv) secBiv.classList.remove('hidden');
-          if (invCont) invCont.classList.add('hidden');
-        } else {
-          if (secUni) secUni.classList.remove('hidden');
-          if (secBiv) secBiv.classList.add('hidden');
-          if (invCont) invCont.classList.remove('hidden');
-        }
-
-        if (tabDataBtn) tabDataBtn.classList.remove('active');
-        if (tabMapaBtn) tabMapaBtn.classList.add('active');
-        if (tabInvBtn) tabInvBtn.classList.remove('active');
-        initMap();
-        if (currentMapMode === 'univariado') {
-          actualizarCapaMapa();
-        } else {
-          actualizarCapaBivariada();
-        }
-        renderRanking();
-      } else if (p === 'inventario') {
-        if (sidebarMain) sidebarMain.classList.add('hidden');
-        if (vistaData) vistaData.classList.add('hidden');
-        if (vistaMapa) vistaMapa.classList.add('hidden');
-        if (vistaInv) vistaInv.classList.remove('hidden');
-
-        if (tabDataBtn) tabDataBtn.classList.remove('active');
-        if (tabMapaBtn) tabMapaBtn.classList.remove('active');
-        if (tabInvBtn) tabInvBtn.classList.add('active');
-
-        cargarInventario();
+        if (bivRankToggle) bivRankToggle.classList.remove('hidden');
+        if (legendControl && mapInstance) mapInstance.removeControl(legendControl);
+        updateBivRankingButtons();
+        cargarDatosBivariados();
+      } else {
+        secUni.classList.remove('hidden');
+        secBiv.classList.add('hidden');
+        if (bivLegend) bivLegend.classList.add('hidden');
+        if (invCont && isMapVisible) invCont.classList.remove('hidden');
+        if (bivRankToggle) bivRankToggle.classList.add('hidden');
+        if (legendControl && mapInstance && isMapVisible) legendControl.addTo(mapInstance);
+        const headerTh = document.getElementById('ranking-metric-header');
+        if (headerTh) headerTh.textContent = currentUniLabel || 'Valor';
+        cargarDatosMapaUni();
       }
+    }
+
+    function onNivelChanged() {
+      const nivel = document.getElementById('nivel-select').value;
+      const baseSelect = document.getElementById('base-select');
+      baseSelect.innerHTML = '';
+
+      Object.keys(configBases).forEach(k => {
+        const item = configBases[k];
+        if (item.niveles.includes(nivel)) {
+          const opt = document.createElement('option');
+          opt.value = k;
+          opt.textContent = item.label;
+          baseSelect.appendChild(opt);
+        }
+      });
+      populateBivSelects();
+      onBaseChanged();
+      renderMultiIndicatorsPanel();
+      cargarDatosMultiples();
+    }
+
+    function onBaseChanged() {
+      const baseKey = document.getElementById('base-select').value;
+      const item = configBases[baseKey];
+      const indSelect = document.getElementById('indicador-select');
+      indSelect.innerHTML = '';
+
+      item.indicadores.forEach(ind => {
+        const opt = document.createElement('option');
+        opt.value = ind.id;
+        opt.textContent = ind.label;
+        indSelect.appendChild(opt);
+      });
+
+      const contAnios = document.getElementById('contenedor-anios-uni');
+      if (item.tiene_anios) {
+        contAnios.classList.remove('hidden');
+        setupDualSlider('slider-uni', item.min_anio, item.max_anio, item.min_anio, item.max_anio);
+      } else {
+        contAnios.classList.add('hidden');
+      }
+
+      if (currentMapMode === 'univariado' && !document.getElementById('vista-mapa').classList.contains('hidden')) {
+        cargarDatosMapaUni();
+      }
+    }
+
+    function populateBivSelects() {
+      const b1 = document.getElementById('biv-base-1');
+      const b2 = document.getElementById('biv-base-2');
+      if (!b1 || !b2) return;
+      b1.innerHTML = '';
+      b2.innerHTML = '';
+      const nivel = document.getElementById('nivel-select')?.value || 'departamento';
+      const keys = Object.keys(configBases).filter(k => configBases[k].niveles.includes(nivel));
+      keys.forEach(k => {
+        b1.appendChild(new Option(configBases[k].label, k));
+        b2.appendChild(new Option(configBases[k].label, k));
+      });
+      if (keys.length > 1) b2.value = keys[1];
+      onBivBase1Changed();
+      onBivBase2Changed();
+    }
+
+    function onBivBase1Changed() {
+      const baseKey = document.getElementById('biv-base-1').value;
+      const item = configBases[baseKey];
+      if (!item) return;
+      const sel = document.getElementById('biv-ind-1');
+      sel.innerHTML = '';
+      item.indicadores.forEach(ind => sel.appendChild(new Option(ind.label, ind.id)));
+      
+      const box = document.getElementById('biv-slider-box-1');
+      if (item.tiene_anios) {
+        box.classList.remove('hidden');
+        setupDualSlider('slider-biv1', item.min_anio, item.max_anio, item.min_anio, item.max_anio);
+      } else {
+        box.classList.add('hidden');
+      }
+      cargarDatosBivariados();
+    }
+
+    function onBivBase2Changed() {
+      const baseKey = document.getElementById('biv-base-2').value;
+      const item = configBases[baseKey];
+      if (!item) return;
+      const sel = document.getElementById('biv-ind-2');
+      sel.innerHTML = '';
+      item.indicadores.forEach(ind => sel.appendChild(new Option(ind.label, ind.id)));
+      
+      const box = document.getElementById('biv-slider-box-2');
+      if (item.tiene_anios) {
+        box.classList.remove('hidden');
+        setupDualSlider('slider-biv2', item.min_anio, item.max_anio, item.min_anio, item.max_anio);
+      } else {
+        box.classList.add('hidden');
+      }
+      cargarDatosBivariados();
+    }
+
+    // --- INVENTARIO DE VARIABLES ---
+    let inventoryData = [];
+    let filteredInventory = [];
+
+    async function cargarInventario() {
+      if (!inventoryData.length) {
+        try {
+          const res = await fetch('/api/inventory');
+          inventoryData = await res.json();
+          poblarFiltrosInventario();
+        } catch (e) {
+          console.error("Error al cargar inventario:", e);
+        }
+      }
+      filtrarInventario();
+    }
+
+    function poblarFiltrosInventario() {
+      const selectGrupo = document.getElementById('inv-filter-grupo');
+      if (!selectGrupo) return;
+      
+      const grupos = [...new Set(inventoryData.map(item => item.grupo))].sort();
+      selectGrupo.innerHTML = '<option value="">Todos los grupos (' + inventoryData.length + ')</option>';
+      grupos.forEach(g => {
+        const count = inventoryData.filter(i => i.grupo === g).length;
+        const opt = document.createElement('option');
+        opt.value = g;
+        opt.textContent = `${g} (${count})`;
+        selectGrupo.appendChild(opt);
+      });
+    }
+
+    function filtrarInventario() {
+      const query = (document.getElementById('inv-search-input')?.value || '').toLowerCase().trim();
+      const grupoSel = document.getElementById('inv-filter-grupo')?.value || '';
+
+      filteredInventory = inventoryData.filter(item => {
+        const matchQuery = !query || 
+          item.indicador.toLowerCase().includes(query) ||
+          item.descripcion.toLowerCase().includes(query) ||
+          item.grupo.toLowerCase().includes(query) ||
+          item.fuente.toLowerCase().includes(query) ||
+          item.id.toLowerCase().includes(query);
+
+        const matchGrupo = !grupoSel || item.grupo === grupoSel;
+        return matchQuery && matchGrupo;
+      });
+
+      renderizarInventario();
+    }
+
+    function getGroupBadgeClass(grupo) {
+      const g = (grupo || '').toLowerCase();
+      if (g.includes('población') || g.includes('poblacion')) return 'bg-blue-50 text-blue-800 border-blue-200';
+      if (g.includes('clima') || g.includes('ambiente')) return 'bg-teal-50 text-teal-800 border-teal-200';
+      if (g.includes('salud') || g.includes('mortalidad')) return 'bg-rose-50 text-rose-800 border-rose-200';
+      if (g.includes('endes')) return 'bg-amber-50 text-amber-800 border-amber-200';
+      if (g.includes('censo')) return 'bg-indigo-50 text-indigo-800 border-indigo-200';
+      if (g.includes('misceláneo') || g.includes('miscelaneo') || g.includes('viaje')) return 'bg-emerald-50 text-emerald-800 border-emerald-200';
+      return 'bg-gray-50 text-gray-700 border-gray-200';
+    }
+
+    function renderizarInventario() {
+      const tbody = document.getElementById('inv-table-body');
+      const counter = document.getElementById('inv-counter');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+      if (counter) counter.textContent = `${filteredInventory.length} de ${inventoryData.length} variables`;
+
+      if (!filteredInventory.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500 text-xs">No se encontraron variables con los criterios de búsqueda.</td></tr>`;
+        return;
+      }
+
+      filteredInventory.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-emerald-50/40 transition-colors';
+
+        const badgeClass = getGroupBadgeClass(item.grupo);
+
+        tr.innerHTML = `
+          <td class="px-3 py-2 whitespace-nowrap">
+            <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded border ${badgeClass}">${item.grupo}</span>
+          </td>
+          <td class="px-3 py-2">
+            <div class="font-bold text-gray-900 text-xs">${item.indicador}</div>
+            <div class="text-[9.5px] text-gray-400 font-mono mt-0.5">${item.id}</div>
+          </td>
+          <td class="px-3 py-2 text-gray-600 text-xs max-w-[400px] leading-relaxed">${item.descripcion}</td>
+          <td class="px-3 py-2 whitespace-nowrap">
+            <span class="text-[10px] font-semibold text-gray-800 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">${item.resolucion_temporal}</span>
+          </td>
+          <td class="px-3 py-2 text-gray-700 font-medium text-xs whitespace-nowrap">
+            ${item.fuente}
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function descargarInventarioCSV() {
+      if (!filteredInventory.length) return;
+      const headers = ["Grupo", "Indicador", "ID", "Descripcion", "Resolucion_Temporal", "Fuente"];
+      const rows = filteredInventory.map(item => [
+        `"${item.grupo}"`,
+        `"${item.indicador.replace(/"/g, '""')}"`,
+        `"${item.id}"`,
+        `"${item.descripcion.replace(/"/g, '""')}"`,
+        `"${item.resolucion_temporal}"`,
+        `"${item.fuente.replace(/"/g, '""')}"`
+      ]);
+      const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const link = document.createElement("a");
+      link.setAttribute("href", encodeURI(csvContent));
+      link.setAttribute("download", `inventario_variables_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     function descargarCSV() {
       if (!datosActuales.rows || datosActuales.rows.length === 0) return;
       const header = datosActuales.columns.join(',');
       const rows = datosActuales.rows.map(r => datosActuales.columns.map(c => `"${r[c] !== undefined ? r[c] : ''}"`).join(','));
-      const csvContent = "data:text/csv;charset=utf-8," + [header, ...rows].join('\n');
+      const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [header, ...rows].join('\n');
       const link = document.createElement("a");
       link.setAttribute("href", encodeURI(csvContent));
       link.setAttribute("download", `datahub_export_${new Date().toISOString().slice(0,10)}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+
+    async function initApp() {
+      const res = await fetch('/api/config');
+      configBases = await res.json();
+      
+      // Default selected indicators in Data Tab (e.g. population total, pm2.5, dengue total)
+      selectedMultiIndicators.add('poblacion:poblacion_total');
+      selectedMultiIndicators.add('clima:clima_pm25');
+      selectedMultiIndicators.add('salud_vectores:dengue_total');
+
+      setupDualSlider('slider-data', 2000, 2025, 2020, 2024);
+      populateBivSelects();
+      onNivelChanged();
+      cargarInventario();
     }
 
     document.addEventListener("DOMContentLoaded", initApp);

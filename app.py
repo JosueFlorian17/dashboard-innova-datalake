@@ -24,6 +24,7 @@ CATALOG = {
         "label": "Mortalidad (SINADEF)",
         "niveles": ["departamento", "provincia", "distrito"],
         "tiene_anios": True,
+        "tiene_meses": True,
         "min_anio": 2003,
         "max_anio": 2024,
         "indicadores": [
@@ -63,6 +64,7 @@ CATALOG = {
         "label": "Salud - Vectores (Dengue / Malaria)",
         "niveles": ["departamento", "provincia", "distrito"],
         "tiene_anios": True,
+        "tiene_meses": True,
         "min_anio": 2000,
         "max_anio": 2024,
         "indicadores": [
@@ -1035,6 +1037,27 @@ def temporal_response(df, prefix, conn):
     df = df.fillna("")
     return jsonify({"columns": list(df.columns), "rows": df.to_dict(orient="records")})
 
+def temporal_monthly_response(df, prefix, conn, anio_min, anio_max):
+    if df.empty:
+        return jsonify({"columns": ["ubigeo", "nombre"], "rows": []})
+    df = with_names(df, conn)
+    df["periodo"] = df.apply(lambda r: str(r["anio"]) if str(r["mes"]) == "Total" else f"{r['anio']}_{r['mes']}", axis=1)
+    piv = df.pivot_table(index=["ubigeo", "nombre"], columns="periodo", values="valor", aggfunc="sum").reset_index()
+    
+    ordered_cols = ["ubigeo", "nombre"]
+    for y in range(anio_min, anio_max + 1):
+        if str(y) in piv.columns:
+            ordered_cols.append(str(y))
+        for m in range(1, 13):
+            col_m = f"{y}_{m:02d}"
+            if col_m in piv.columns:
+                ordered_cols.append(col_m)
+                
+    piv = piv[[c for c in ordered_cols if c in piv.columns]]
+    piv.columns = [f"{prefix}{c}" if c not in ("ubigeo", "nombre") else c for c in piv.columns]
+    piv = piv.fillna("")
+    return jsonify({"columns": list(piv.columns), "rows": piv.to_dict(orient="records")})
+
 @app.route("/")
 def home():
     return send_file(BASE_DIR / "index.html")
@@ -1079,10 +1102,10 @@ def get_data():
     if base == "mortalidad":
         sexo = "F" if indicador == "mortalidad_femenino" else "M" if indicador == "mortalidad_masculino" else "Total"
         df = pd.read_sql_query(
-            "SELECT ubigeo, anio, defunciones AS valor FROM fact_mortality WHERE nivel_geo = ? AND mes = 'Total' AND sexo = ? AND anio BETWEEN ? AND ?",
+            "SELECT ubigeo, anio, mes, defunciones AS valor FROM fact_mortality WHERE nivel_geo = ? AND sexo = ? AND anio BETWEEN ? AND ?",
             conn, params=(nivel, sexo, anio_min, anio_max),
         )
-        result = temporal_response(df, "DEATHS_", conn)
+        result = temporal_monthly_response(df, "DEATHS_", conn, anio_min, anio_max)
     elif base == "poblacion":
         sexo = "F" if indicador == "poblacion_f" else "M" if indicador == "poblacion_m" else "Total"
         grupo = "0-50" if indicador == "poblacion_0_50" else ">50" if indicador == "poblacion_mayor_50" else "Total"
@@ -1104,7 +1127,6 @@ def get_data():
         )
         result = temporal_response(df, prefix, conn)
     elif base == "salud_vectores":
-        mes = request.args.get("mes", "Total")
         if indicador == "dengue_total":
             disease, sexo, edad, prefix = "DENGUE", "Total", "Total", "DENGUE_"
         elif indicador == "dengue_f":
@@ -1129,10 +1151,10 @@ def get_data():
             disease, sexo, edad, prefix = "DENGUE", "Total", "Total", "DENGUE_"
             
         df = pd.read_sql_query(
-            "SELECT ubigeo, anio, casos AS valor FROM fact_disease WHERE nivel_geo = ? AND enfermedad = ? AND mes = ? AND sexo = ? AND grupo_edad = ? AND anio BETWEEN ? AND ?",
-            conn, params=(nivel, disease, mes, sexo, edad, anio_min, anio_max),
+            "SELECT ubigeo, anio, mes, casos AS valor FROM fact_disease WHERE nivel_geo = ? AND enfermedad = ? AND sexo = ? AND grupo_edad = ? AND anio BETWEEN ? AND ?",
+            conn, params=(nivel, disease, sexo, edad, anio_min, anio_max),
         )
-        result = temporal_response(df, prefix, conn)
+        result = temporal_monthly_response(df, prefix, conn, anio_min, anio_max)
     elif base == "censo":
         df = pd.read_sql_query(
             "SELECT ubigeo, valor FROM fact_census WHERE nivel_geo = ? AND variable = ?",
